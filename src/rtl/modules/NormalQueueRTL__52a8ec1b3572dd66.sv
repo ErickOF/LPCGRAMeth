@@ -1,0 +1,89 @@
+module NormalQueueRTL__52a8ec1b3572dd66
+import cgra_pkg::*;
+(
+  input  logic [0:0] clk ,
+  output logic [4:0] count ,
+  input  logic [0:0] reset ,
+  input InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b recv__msg  ,
+  output logic [0:0] recv__rdy  ,
+  input logic [0:0] recv__val  ,
+  output InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b send__msg  ,
+  input logic [0:0] send__rdy  ,
+  output logic [0:0] send__val  
+);
+  //-------------------------------------------------------------
+  // Component ctrl
+  //-------------------------------------------------------------
+
+  logic [0:0] ctrl__clk;
+  logic [4:0] ctrl__count;
+  logic [3:0] ctrl__raddr;
+  logic [0:0] ctrl__recv_rdy;
+  logic [0:0] ctrl__recv_val;
+  logic [0:0] ctrl__reset;
+  logic [0:0] ctrl__send_rdy;
+  logic [0:0] ctrl__send_val;
+  logic [3:0] ctrl__waddr;
+  logic [0:0] ctrl__wen;
+
+  NormalQueueCtrlRTL__num_entries_16 ctrl
+  (
+    .clk( ctrl__clk ),
+    .count( ctrl__count ),
+    .raddr( ctrl__raddr ),
+    .recv_rdy( ctrl__recv_rdy ),
+    .recv_val( ctrl__recv_val ),
+    .reset( ctrl__reset ),
+    .send_rdy( ctrl__send_rdy ),
+    .send_val( ctrl__send_val ),
+    .waddr( ctrl__waddr ),
+    .wen( ctrl__wen )
+  );
+
+  //-------------------------------------------------------------
+  // End of component ctrl
+  //-------------------------------------------------------------
+
+  //-------------------------------------------------------------
+  // Component dpath
+  //-------------------------------------------------------------
+
+  logic [0:0] dpath__clk;
+  logic [3:0] dpath__raddr;
+  InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b dpath__recv_msg;
+  logic [0:0] dpath__reset;
+  InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b dpath__send_msg;
+  logic [3:0] dpath__waddr;
+  logic [0:0] dpath__wen;
+
+  NormalQueueDpathRTL__52a8ec1b3572dd66 dpath
+  (
+    .clk( dpath__clk ),
+    .raddr( dpath__raddr ),
+    .recv_msg( dpath__recv_msg ),
+    .reset( dpath__reset ),
+    .send_msg( dpath__send_msg ),
+    .waddr( dpath__waddr ),
+    .wen( dpath__wen )
+  );
+
+  //-------------------------------------------------------------
+  // End of component dpath
+  //-------------------------------------------------------------
+
+  assign ctrl__clk = clk;
+  assign ctrl__reset = reset;
+  assign dpath__clk = clk;
+  assign dpath__reset = reset;
+  assign dpath__wen = ctrl__wen;
+  assign dpath__waddr = ctrl__waddr;
+  assign dpath__raddr = ctrl__raddr;
+  assign ctrl__recv_val = recv__val;
+  assign recv__rdy = ctrl__recv_rdy;
+  assign dpath__recv_msg = recv__msg;
+  assign send__val = ctrl__send_val;
+  assign ctrl__send_rdy = send__rdy;
+  assign send__msg = dpath__send_msg;
+  assign count = ctrl__count;
+
+endmodule

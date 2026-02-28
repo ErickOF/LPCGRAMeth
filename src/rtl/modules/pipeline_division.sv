@@ -1,0 +1,78 @@
+module pipeline_division #(
+import cgra_pkg::*;
+    parameter WIDTH = 32,
+    parameter CYCLE = 8
+) (
+    input  clk,
+    input  reset,
+    input  [WIDTH-1:0] dividend,
+    input  [WIDTH-1:0] divisor,
+    output [WIDTH-1:0] quotient,
+    output [WIDTH-1:0] remainder
+);
+
+    parameter num_div = WIDTH / CYCLE;
+    parameter res_div = WIDTH - CYCLE * num_div;
+
+    // Pipeline registers between stages
+    reg [WIDTH-1:0] q_i[0:CYCLE-1];             // Temporal quotient          
+    reg [WIDTH:0]   r_i[0:CYCLE-1];             // Temporal remainder
+    wire [WIDTH-1:0] q_o[0:CYCLE-1];
+    wire [WIDTH:0]   r_o[0:CYCLE-1];
+
+    // Pipeline registers for dividend and divisor
+    // Since there could be CYCLE divisions in parallel,
+    // we need to store the dividend and divisor for each stage.
+    reg [WIDTH-1:0] dividend_reg[0:CYCLE-1];    
+    reg [WIDTH-1:0] divisor_reg [0:CYCLE-1];
+
+    genvar i; 
+
+    always @(*) begin
+        dividend_reg[0] = dividend;
+        divisor_reg[0] = divisor;
+        q_i[0] = 0;
+        r_i[0] = 0;
+    end
+
+    generate
+        for (i = 1; i < CYCLE; i++) begin
+            always @(posedge clk) begin
+                if (reset) begin
+                    q_i[i] <= 0;
+                    r_i[i] <= 0;
+                    dividend_reg[i] <= 0;
+                    divisor_reg[i]  <= 0;
+                end
+                else begin             // Propagate values through pipeline
+                    q_i[i] <= q_o[i-1];           // Temporal quotient to next stage
+                    r_i[i] <= r_o[i-1];           // Temporal remainder to next stage
+                    dividend_reg[i] <= dividend_reg[i-1];       // Forward dividend
+                    divisor_reg[i]  <= divisor_reg[i-1];        // Forward divisor
+                end
+            end
+        end
+    endgenerate
+
+    generate
+        for (i = 0; i < CYCLE; i++) begin
+            division #(
+                .WIDTH(WIDTH),
+                .ITER_BEGIN(i * num_div),
+                .ITER_END((i + 1) * num_div)
+            ) u0 (
+                .dividend(dividend_reg[i]),
+                .divisor(divisor_reg[i]),
+                .q_i(q_i[i]),
+                .r_i(r_i[i]),
+                .q_o(q_o[i]),
+                .r_o(r_o[i])
+            );
+        end
+    endgenerate
+
+    // Final outputs from last pipeline stage
+    assign quotient  = q_o[CYCLE-1];
+    assign remainder = r_o[CYCLE-1][WIDTH-1:0];
+
+endmodule
