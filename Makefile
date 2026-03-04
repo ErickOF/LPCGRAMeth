@@ -34,9 +34,9 @@
 # -----------------------------------------------------------------------------
 # Tool configuration – override from command line or environment as needed
 # -----------------------------------------------------------------------------
-VCS      ?= $(shell echo $$VCS_HOME)/vcs
-DVE      ?= $(shell echo $$DVE_HOME)/dve
-VERDI    ?= $(shell echo $$VERDI_HOME)/verdi
+VCS      ?= $(shell echo $$VCS_HOME)/bin/vcs
+DVE      ?= $(shell echo $$DVE_HOME)/bin/dve
+VERDI    ?= $(shell echo $$VERDI_HOME)/bin/verdi
 SEED     ?= 1
 TEST     ?= cgra_smoke_test
 UVM_HOME ?= $(shell echo $$UVM_HOME)
@@ -219,9 +219,9 @@ help:
 	@echo "  make waves_verdi            Sim + dump FSDB + open Verdi"
 	@echo ""
 	@echo "  -- Inspection (no re-run) ---------------------------------------"
-	@echo "  make inspect                sOpen last wave (VIEWER=$(VIEWER))"
-	@echo "  make inspect VIEWER=dve     sOpen last VPD in DVE"
-	@echo "  make inspect VIEWER=verdi   sOpen last FSDB in Verdi"
+	@echo "  make inspect                Open last wave (VIEWER=$(VIEWER))"
+	@echo "  make inspect VIEWER=dve     Open last VPD in DVE"
+	@echo "  make inspect VIEWER=verdi   Open last FSDB in Verdi"
 	@echo ""
 	@echo "  make clean                  Remove all generated files"
 	@echo ""
