@@ -92,6 +92,11 @@ typedef struct packed {
 } ControllerNocXbarPacket_InterCgraPktType__4cecb651ad7cb757;
 
 typedef struct packed {
+  logic [0:0] dst;
+  InterCgraPacket_4_4x1_4_8_4_CgraPayload__9d404f857a1e94ff inter_cgra_pkt;
+} ControllerNocXbarPacket_InterCgraPktType__f1a81b7e6c97120c;
+
+typedef struct packed {
   logic [4:0] src;
   logic [1:0] dst;
   logic [8:0] addr;
