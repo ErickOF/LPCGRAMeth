@@ -44,6 +44,21 @@ typedef struct packed {
 } InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b;
 
 typedef struct packed {
+  logic [1:0] src;
+  logic [1:0] dst;
+  logic [1:0] src_x;
+  logic [0:0] src_y;
+  logic [1:0] dst_x;
+  logic [0:0] dst_y;
+  logic [2:0] src_tile_id;
+  logic [2:0] dst_tile_id;
+  logic [4:0] remote_src_port;
+  logic [7:0] opaque;
+  logic [1:0] vc_id;
+  MultiCgraPayload_Cmd_Data_DataAddr_Ctrl_CtrlAddr__a0427cd98cfcae6f payload;
+} InterCgraPacket_4_4x1_4_8_4_CgraPayload__9d404f857a1e94ff;
+
+typedef struct packed {
   logic [8:0] src;
   logic [8:0] dst;
   logic [1:0] src_cgra_id;
