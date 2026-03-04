@@ -28,7 +28,7 @@
 src/val/pkg/cgra_uvm_pkg.sv
 
 # Interface
-src/val/tb/intf/cgra_if.sv
+src/val/intf/cgra_if.sv
 
 # Assertion module
 src/val/assertions/cgra_assertions.sv
