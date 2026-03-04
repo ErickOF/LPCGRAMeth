@@ -28,9 +28,9 @@ class cgra_monitor extends uvm_monitor;
         ap = new("ap", this);
 
         if (!uvm_config_db #(virtual cgra_if)::get(this, "", "vif", vif))
-            `uvm_fatal("NO_VIF",
-                "cgra_monitor: virtual interface not found. "
-                "Check uvm_config_db::set() call in tb_top.")
+            `uvm_fatal(
+                get_type_name(),
+                "Virtual interface not found. Check uvm_config_db::set() call in tb_top.")
     endfunction
 
     task run_phase(uvm_phase phase);
