@@ -239,4 +239,4 @@ src/rtl/modules/XbarRTL__40ca80b1d76a0751.sv
 # ---------------------------------------------------------------------------
 # RTL top
 # ---------------------------------------------------------------------------
-src/rtl/modules/CgraTemplateRTL.sv
+src/rtl/top/CgraTemplateRTL.sv
