@@ -1,5 +1,5 @@
-module pipeline_division #(
-import cgra_pkg::*;
+module pipeline_division
+#(
     parameter WIDTH = 32,
     parameter CYCLE = 8
 ) (
