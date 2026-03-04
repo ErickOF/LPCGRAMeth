@@ -1,10 +1,3 @@
-module for VectorCGRA.
-import cgra_pkg::*;
-
-Author : Jiajun Qin
-  Date : 9 July, 2025
-*/
-
 module division #(
     parameter WIDTH      = 32,
     parameter ITER_BEGIN = 0,
