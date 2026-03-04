@@ -92,6 +92,19 @@ typedef struct packed {
 
 typedef struct packed {
   logic [1:0] src;
+  logic [1:0] dst;
+  logic [8:0] addr;
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 data;
+  logic [1:0] src_cgra;
+  logic [2:0] src_tile;
+  logic [1:0] remote_src_port;
+  logic [0:0] streaming_rd;
+  logic [8:0] streaming_rd_stride;
+  logic [8:0] streaming_rd_end_addr;
+} MemAccessPacket_3_4_512__8e5c7af30d36e757;
+
+typedef struct packed {
+  logic [1:0] src;
   logic [4:0] dst;
   logic [8:0] addr;
   CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 data;
