@@ -10,9 +10,9 @@
 # ---------------------------------------------------------------------------
 # Defines
 # ---------------------------------------------------------------------------
-src/rtl/hardfloat_consts.svh
-src/rtl/hardfloat_specialize.svh
-src/rtl/riscv_hardfloat_specialize.svh
+src/rtl/definitions/hardfloat_consts.svh
+src/rtl/definitions/hardfloat_specialize.svh
+src/rtl/definitions/riscv_hardfloat_specialize.svh
 
 # ---------------------------------------------------------------------------
 # Packages
