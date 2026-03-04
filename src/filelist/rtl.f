@@ -8,9 +8,11 @@
 # =============================================================================
 
 # ---------------------------------------------------------------------------
-# Include directories (accessed via `include inside RTL files)
+# Defines
 # ---------------------------------------------------------------------------
-+incdir+src/rtl/include
+src/rtl/hardfloat_consts.svh
+src/rtl/hardfloat_specialize.svh
+src/rtl/riscv_hardfloat_specialize.svh
 
 # ---------------------------------------------------------------------------
 # Packages
