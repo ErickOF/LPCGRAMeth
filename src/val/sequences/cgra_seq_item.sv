@@ -60,10 +60,8 @@ class cgra_seq_item extends uvm_sequence_item;
 
     function string convert2string();
         return $sformatf(
-            "reset=%0b addr_lo=0x%03h addr_hi=0x%03h cgra_id=%0d ",
-            reset, address_lower, address_upper, cgra_id)
-            + $sformatf(
-            "cpu_val=%0b noc_val=%0b cpu_rdy_out=%0b send_cpu_val=%0b",
+            "reset=%0b addr_lo=0x%03h addr_hi=0x%03h cgra_id=%0d cpu_val=%0b noc_val=%0b cpu_rdy_out=%0b send_cpu_val=%0b",
+            reset, address_lower, address_upper, cgra_id,
             recv_from_cpu_pkt__val, recv_from_inter_cgra_noc__val,
             recv_from_cpu_pkt__rdy, send_to_cpu_pkt__val);
     endfunction
