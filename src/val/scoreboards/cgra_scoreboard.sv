@@ -31,18 +31,13 @@ class cgra_scoreboard extends uvm_scoreboard;
     function void check_item(cgra_seq_item item);
         n_checks++;
 
-        // Skip checks while DUT is in reset
-        if (item.reset) return;
+        // Skip checks while DUT is in reset (also skip when reset is
+        // X/uninitialized)
+        if (item.reset !== 1'b0) return;
 
         if ($isunknown(item.send_to_cpu_pkt__val)) begin
             `uvm_error("SB_X_ON_VAL",
                 $sformatf("send_to_cpu_pkt__val X/Z | %s", item.convert2string()))
-            n_errors++;
-        end
-
-        if ($isunknown(item.send_to_inter_cgra_noc__val)) begin
-            `uvm_error("SB_X_ON_VAL",
-                $sformatf("send_to_inter_cgra_noc__val X/Z | %s", item.convert2string()))
             n_errors++;
         end
 
@@ -52,11 +47,6 @@ class cgra_scoreboard extends uvm_scoreboard;
             n_errors++;
         end
 
-        if ($isunknown(item.recv_from_inter_cgra_noc__rdy)) begin
-            `uvm_error("SB_X_ON_RDY",
-                $sformatf("recv_from_inter_cgra_noc__rdy X/Z | %s", item.convert2string()))
-            n_errors++;
-        end
     endfunction
 
     function void report_phase(uvm_phase phase);

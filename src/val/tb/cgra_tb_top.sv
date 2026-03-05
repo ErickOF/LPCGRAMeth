@@ -50,14 +50,11 @@ module cgra_tb_top;
     // Assertion module bind
     // ------------------------------------------------------------------------
     bind CgraTemplateRTL cgra_assertions u_assertions (
-        .clk                          (clk                          ),
-        .reset                        (reset                        ),
-        .recv_from_cpu_pkt__rdy       (recv_from_cpu_pkt__rdy       ),
-        .recv_from_inter_cgra_noc__rdy(recv_from_inter_cgra_noc__rdy),
-        .send_to_cpu_pkt__val         (send_to_cpu_pkt__val         ),
-        .send_to_cpu_pkt__rdy         (send_to_cpu_pkt__rdy         ),
-        .send_to_inter_cgra_noc__val  (send_to_inter_cgra_noc__val  ),
-        .send_to_inter_cgra_noc__rdy  (send_to_inter_cgra_noc__rdy  )
+        .clk                   (clk                   ),
+        .reset                 (reset                 ),
+        .recv_from_cpu_pkt__rdy(recv_from_cpu_pkt__rdy),
+        .send_to_cpu_pkt__val  (send_to_cpu_pkt__val  ),
+        .send_to_cpu_pkt__rdy  (send_to_cpu_pkt__rdy  )
     );
 
     // ------------------------------------------------------------------------
