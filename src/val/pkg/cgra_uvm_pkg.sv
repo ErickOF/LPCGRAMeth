@@ -21,6 +21,7 @@ package cgra_uvm_pkg;
     // Sequences
     // ------------------------------------------------------------------------
     `include "cgra_base_seq.sv"
+    `include "cgra_reset_seq.sv"
 
     // ------------------------------------------------------------------------
     // Agent components
