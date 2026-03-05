@@ -1,13 +1,7 @@
 // ============================================================================
 // File   : cgra_base_test.sv
-// Brief  : UVM base test – bootstraps the environment and runs the base
-//          sequence.  All other tests extend this class.
-//
-// TODO CGRA: In run_test_body(), replace cgra_base_seq with
-//            specialized sequences once the DUT is connected:
-//              - cgra_config_seq  (loads configuration words)
-//              - cgra_data_seq    (injects data via CPU channel)
-//              - cgra_random_seq  (stress / regression)
+// Brief  : UVM base test - bootstraps the environment and runs the base
+//          sequence. All other tests extend this class.
 // ============================================================================
 class cgra_base_test extends uvm_test;
     `uvm_component_utils(cgra_base_test)

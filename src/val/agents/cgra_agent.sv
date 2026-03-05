@@ -1,10 +1,6 @@
 // ============================================================================
 // File   : cgra_agent.sv
-// Brief  : UVM agent – bundles driver, monitor and sequencer.
-//
-// TODO CGRA: No structural changes needed.  When adding multiple agents (e.g.
-//            CPU agent + NoC agent), instantiate one cgra_agent per interface
-//            and name them distinctly in the environment.
+// Brief  : UVM agent - bundles driver, monitor and sequencer.
 // ============================================================================
 class cgra_agent extends uvm_agent;
     `uvm_component_utils(cgra_agent)

@@ -1,5 +1,5 @@
 # =============================================================================
-# rtl.f – VCS filelist for CgraTemplateRTL RTL sources
+# rtl.f - VCS filelist for CgraTemplateRTL RTL sources
 # Compilation order:
 # - include dirs
 # - packages

@@ -1,16 +1,7 @@
 // ============================================================================
 // File   : cgra_driver.sv
-// Brief  : UVM driver – translates sequence items into DUT pin wiggles.
-//          Currently drives the dummy DFF interface.
-//
-// TODO CGRA: In drive_item(), replace the two signal assignments with the full
-//            handshake protocol for CgraTemplateRTL:
-//              1.  Drive address_lower / address_upper / cgra_id once.
-//              2.  For CPU_PKT items: assert recv_from_cpu_pkt__val,
-//                  present recv_from_cpu_pkt__msg, wait for __rdy.
-//              3.  For INTER_NOC items: same pattern on noc channel.
-//              4.  For RESET items: assert DUT reset for N cycles.
-//            Also update vif signal names to match cgra_if.sv.
+// Brief  : UVM driver - translates sequence items into DUT pin wiggles.
+//          Drives all CgraTemplateRTL input ports each cycle.
 // ============================================================================
 class cgra_driver extends uvm_driver #(cgra_seq_item);
     `uvm_component_utils(cgra_driver)
@@ -43,24 +34,37 @@ class cgra_driver extends uvm_driver #(cgra_seq_item);
     endtask
 
     // ------------------------------------------------------------------------
-    // Initialise DUT inputs to a known idle state
-    // TODO CGRA: add all real DUT input defaults here
+    // Initialize DUT inputs to a safe idle state (reset asserted)
     // ------------------------------------------------------------------------
     task init_signals();
         @(vif.driver_cb);
-        vif.driver_cb.reset   <= 1'b1;
-        vif.driver_cb.data_in <= '0;
+        vif.driver_cb.reset                         <= 1'b1;
+        vif.driver_cb.address_lower                 <= '0;
+        vif.driver_cb.address_upper                 <= '0;
+        vif.driver_cb.cgra_id                       <= '0;
+        vif.driver_cb.recv_from_cpu_pkt__msg        <= '0;
+        vif.driver_cb.recv_from_cpu_pkt__val        <= 1'b0;
+        vif.driver_cb.recv_from_inter_cgra_noc__msg <= '0;
+        vif.driver_cb.recv_from_inter_cgra_noc__val <= 1'b0;
+        vif.driver_cb.send_to_cpu_pkt__rdy          <= 1'b1;
+        vif.driver_cb.send_to_inter_cgra_noc__rdy   <= 1'b1;
     endtask
 
     // ------------------------------------------------------------------------
-    // Drive one sequence item onto the interface
-    // TODO CGRA: replace with protocol-correct handshake logic
+    // Drive one sequence item onto the interface (one clock cycle)
     // ------------------------------------------------------------------------
     task drive_item(cgra_seq_item item);
         @(vif.driver_cb);
-        // TODO CGRA: drive real DUT signals here
-        vif.driver_cb.reset   <= item.reset;
-        vif.driver_cb.data_in <= item.data_in;
+        vif.driver_cb.reset                         <= item.reset;
+        vif.driver_cb.address_lower                 <= item.address_lower;
+        vif.driver_cb.address_upper                 <= item.address_upper;
+        vif.driver_cb.cgra_id                       <= item.cgra_id;
+        vif.driver_cb.recv_from_cpu_pkt__msg        <= item.recv_from_cpu_pkt__msg;
+        vif.driver_cb.recv_from_cpu_pkt__val        <= item.recv_from_cpu_pkt__val;
+        vif.driver_cb.recv_from_inter_cgra_noc__msg <= item.recv_from_inter_cgra_noc__msg;
+        vif.driver_cb.recv_from_inter_cgra_noc__val <= item.recv_from_inter_cgra_noc__val;
+        vif.driver_cb.send_to_cpu_pkt__rdy          <= item.send_to_cpu_pkt__rdy;
+        vif.driver_cb.send_to_inter_cgra_noc__rdy   <= item.send_to_inter_cgra_noc__rdy;
         `uvm_info(get_type_name(),
             $sformatf("DRIVE  %s", item.convert2string()), UVM_HIGH)
     endtask

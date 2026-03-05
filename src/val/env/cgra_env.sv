@@ -1,12 +1,6 @@
 // ============================================================================
 // File   : cgra_env.sv
-// Brief  : UVM environment – assembles agent, scoreboard and coverage.
-//
-// TODO CGRA: When multiple agents are needed (CPU agent + NoC agent):
-//              1. Declare additional cgra_agent handles.
-//              2. Create them in build_phase with unique names.
-//              3. Pass a different virtual interface to each via config_db.
-//              4. Connect all agent analysis ports to scoreboard/coverage.
+// Brief  : UVM environment - assembles agent, scoreboard and coverage.
 // ============================================================================
 class cgra_env extends uvm_env;
     `uvm_component_utils(cgra_env)

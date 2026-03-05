@@ -1,5 +1,5 @@
 # =============================================================================
-# Makefile – CGRA Simulation (Synopsys VCS + DVE/Verdi)
+# Makefile - CGRA Simulation (Synopsys VCS + DVE/Verdi)
 #
 # -- RTL-only (syntax / elaboration check, static browser) --------------------
 #   make compile_rtl              compile CgraTemplateRTL from rtl.f
@@ -8,7 +8,7 @@
 #   make browse_rtl VIEWER=dve    open RTL hierarchy in DVE
 #
 # -- RTL + UVM Testbench ------------------------------------------------------
-#   make compile                  compile TB (val.f) – alias for compile_val
+#   make compile                  compile TB (val.f) - alias for compile_val
 #   make compile_val              compile RTL + UVM TB
 #   make sim                      compile_val + run (TEST=cgra_smoke_test)
 #   make sim TEST=<name>          run a specific UVM test
@@ -32,13 +32,13 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Tool configuration – override from command line or environment as needed
+# Tool configuration - override from command line or environment as needed
 # -----------------------------------------------------------------------------
 VCS      ?= $(shell echo $$VCS_HOME)/bin/vcs
 DVE      ?= $(shell echo $$DVE_HOME)/bin/dve
 VERDI    ?= $(shell echo $$VERDI_HOME)/bin/verdi
 SEED     ?= 1
-TEST     ?= cgra_smoke_test
+TEST     ?= cgra_basic_test
 UVM_HOME ?= $(shell echo $$UVM_HOME)
 # Default waveform viewer: verdi | dve
 VIEWER   ?= verdi
@@ -68,7 +68,6 @@ VCS_COMMON := \
 
 # -----------------------------------------------------------------------------
 # RTL-only compilation flags  (no UVM, no TB)
-# TODO CGRA: rtl.f must be up-to-date (run: make rtl.f update if needed)
 # -----------------------------------------------------------------------------
 RTL_FLAGS := \
     $(VCS_COMMON)                 \
@@ -78,14 +77,13 @@ RTL_FLAGS := \
 
 # -----------------------------------------------------------------------------
 # RTL + UVM TB compilation flags
-# TODO CGRA: remove dut_dummy.sv from val.f once CgraTemplateRTL is the DUT
-# TODO CGRA: add  -f src/filelist/rtl.f  here once real DUT is wired in
 # -----------------------------------------------------------------------------
 VAL_FLAGS := \
     $(VCS_COMMON)                 \
     -ntb_opts uvm-1.2             \
     +incdir+$(UVM_HOME)/src       \
     $(UVM_HOME)/src/uvm_pkg.sv    \
+    -f src/filelist/rtl.f         \
     -f src/filelist/val.f         \
     +define+UVM_NO_DPI            \
     -l $(LOG_DIR)/compile_val.log \
