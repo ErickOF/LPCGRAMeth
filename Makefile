@@ -146,7 +146,7 @@ endif
 compile: compile_val
 
 compile_val: | $(SIM_DIR) $(LOG_DIR)
-	$(VCS) $(VAL_FLAGS) cgra_tb_top
+	$(VCS) $(VAL_FLAGS) -top cgra_tb_top
 
 ## Compile + run UVM simulation
 sim: compile_val
