@@ -154,7 +154,7 @@ class cgra_basic_test extends cgra_base_test;
 
     task validate_results(ref logic [31:0] expected_results[$]);
         bit matched[16];
-        int unsigned matches;
+        int unsigned match_count;
         logic [31:0] observed_payload;
 
         for (int i = 0; i < 16; i++)
@@ -169,7 +169,7 @@ class cgra_basic_test extends cgra_base_test;
             return;
         end
 
-        matches = 0;
+        match_count = 0;
 
         repeat (post_launch_wait_cycles) begin
             @(vif.monitor_cb);
@@ -183,14 +183,14 @@ class cgra_basic_test extends cgra_base_test;
                 for (int i = 0; i < expected_results.size(); i++) begin
                     if (!matched[i] && (observed_payload == expected_results[i])) begin
                         matched[i] = 1'b1;
-                        matches++;
+                        match_count++;
                         break;
                     end
                 end
 
-                if (matches == expected_results.size()) begin
+                if (match_count == expected_results.size()) begin
                     `uvm_info(get_type_name(),
-                        $sformatf("Matched all %0d expected CPU result payload(s)", matches),
+                        $sformatf("Matched all %0d expected CPU result payload(s)", match_count),
                         UVM_LOW)
                     return;
                 end
@@ -199,6 +199,6 @@ class cgra_basic_test extends cgra_base_test;
 
         `uvm_fatal(get_type_name(),
             $sformatf("Timed out after %0d post-launch cycles waiting for %0d expected CPU result payload(s); matched %0d",
-                post_launch_wait_cycles, expected_results.size(), matches))
+                post_launch_wait_cycles, expected_results.size(), match_count))
     endtask
 endclass : cgra_basic_test
