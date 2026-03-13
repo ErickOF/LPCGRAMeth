@@ -152,8 +152,10 @@ module cgra_tb_top;
     // Pass virtual interface to all UVM components via config_db
     // ------------------------------------------------------------------------
     initial begin
+        // Single global registration point: visible to any UVM component
+        // and sequence that requests "vif".
         uvm_config_db #(virtual cgra_if)::set(
-            null, "uvm_test_top.*", "vif", dut_if);
+            null, "*", "vif", dut_if);
 
         dut_if.dump_enable = 1'b0;
         dut_if.dump_const_mem_enable = 1'b0;
