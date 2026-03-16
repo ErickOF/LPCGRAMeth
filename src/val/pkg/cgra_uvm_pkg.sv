@@ -13,6 +13,16 @@ package cgra_uvm_pkg;
     `include "uvm_macros.svh"
 
     // ------------------------------------------------------------------------
+    // TB-only types (structs / unions must live in a package)
+    // ------------------------------------------------------------------------
+    typedef struct packed {
+        logic [8:0]  dst_tile;   // destination tile ID  (0 - 255)
+        logic [8:0]  addr;       // data SRAM word address
+        logic [31:0] data;       // 32-bit payload
+        logic [0:0]  predicate;  // predicate bit
+    } cgra_data_entry_t;
+
+    // ------------------------------------------------------------------------
     // Sequence item
     // ------------------------------------------------------------------------
     `include "cgra_seq_item.sv"
@@ -22,6 +32,16 @@ package cgra_uvm_pkg;
     // ------------------------------------------------------------------------
     `include "cgra_base_seq.sv"
     `include "cgra_reset_seq.sv"
+    `include "cgra_ctrl_step_cfg.sv"
+    `include "cgra_tile_cfg.sv"
+    `include "cgra_program_base_seq.sv"
+    `include "cgra_preload_seq.sv"
+    `include "cgra_const_load_seq.sv"
+    `include "cgra_loop_config_seq.sv"
+    `include "cgra_operation_map_seq.sv"
+    `include "cgra_prologue_config_seq.sv"
+    `include "cgra_launch_seq.sv"
+    `include "cgra_config_seq.sv"
 
     // ------------------------------------------------------------------------
     // Agent components

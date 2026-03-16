@@ -1,8 +1,8 @@
 // ============================================================================
 // File   : cgra_reset_seq.sv
 // Brief  : Reset sequence for CgraTemplateRTL.
-//          Holds reset asserted (reset=1) for n_reset_cycles clock cycles,
-//          keeping all input channels idle throughout.
+//          Holds reset at reset=reset_assert_val for n_reset_cycles clock
+//          cycles, keeping all input channels idle throughout.
 //          Extend or start this sequence before any stimulus sequence to
 //          bring the DUT into a known state.
 // ============================================================================
@@ -11,6 +11,8 @@ class cgra_reset_seq extends cgra_base_seq;
 
     // Number of cycles to hold reset high
     int unsigned n_reset_cycles = 10;
+    // Value of reset signal to apply during the reset sequence
+    logic reset_assert_val = 1'b1;
 
     function new(string name = "cgra_reset_seq");
         super.new(name);
@@ -25,7 +27,7 @@ class cgra_reset_seq extends cgra_base_seq;
             start_item(item);
 
             if (!item.randomize() with {
-                reset                         == 1'b1;
+                reset                         == reset_assert_val;
                 recv_from_cpu_pkt__val        == 1'b0;
                 recv_from_inter_cgra_noc__val == 1'b0;
                 send_to_cpu_pkt__rdy          == 1'b1;
@@ -37,7 +39,8 @@ class cgra_reset_seq extends cgra_base_seq;
         end
 
         `uvm_info(get_type_name(),
-            $sformatf("cgra_reset_seq done: %0d reset cycles", n_reset_cycles),
+            $sformatf("cgra_reset_seq done: reset=%0d during %0d reset cycles",
+                      reset_assert_val, n_reset_cycles),
             UVM_MEDIUM)
     endtask
 endclass : cgra_reset_seq

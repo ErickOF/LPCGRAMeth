@@ -44,6 +44,17 @@ interface cgra_if (input logic clk);
     logic send_to_inter_cgra_noc__rdy;
 
     // ------------------------------------------------------------------------
+    // TB-only post-run controls
+    // ------------------------------------------------------------------------
+    logic dump_enable;
+    logic dump_const_mem_enable;
+    logic dump_ctrl_mem_enable;
+    logic dump_data_mem_enable;
+    int unsigned post_launch_wait_cycles;
+    int unsigned expected_result_count;
+    logic [31:0] expected_result_payloads [0:15];
+
+    // ------------------------------------------------------------------------
     // Clocking block - driver  (active stimulus, aligned to posedge)
     // ------------------------------------------------------------------------
     clocking driver_cb @(posedge clk);
