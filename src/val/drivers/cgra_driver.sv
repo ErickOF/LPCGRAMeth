@@ -1,17 +1,39 @@
 // ============================================================================
-// File   : cgra_driver.sv
-// Brief  : UVM driver - translates sequence items into DUT pin wiggles.
-//          Drives all CgraTemplateRTL input ports each cycle.
+// Name:         cgra_driver.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  UVM driver - translates sequence items into DUT pin wiggles.
+//      Drives all CgraTemplateRTL input ports each cycle.
 // ============================================================================
+
 class cgra_driver extends uvm_driver #(cgra_seq_item);
     `uvm_component_utils(cgra_driver)
 
     virtual cgra_if vif;
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the driver instance and forwards arguments to
+    //      the UVM base class constructor.
+    //
+    // Params:
+    //   - name (input string): Instance name used by UVM hierarchy/reporting.
+    //   - parent (input uvm_component): Parent component in UVM hierarchy.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_driver", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: build_phase
+    //
+    // Description: Retrieves the virtual interface handle from UVM config_db.
+    //
+    // Params:
+    //   - phase (input uvm_phase): UVM build phase handle.
+    // ------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
 
@@ -21,6 +43,15 @@ class cgra_driver extends uvm_driver #(cgra_seq_item);
                 "Virtual interface not found. Check uvm_config_db::set() call in tb_top.")
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: run_phase
+    //
+    // Description: Initializes interface outputs and continuously drives
+    //      sequence items obtained from the sequencer.
+    //
+    // Params:
+    //   - phase (input uvm_phase): UVM run phase handle.
+    // ------------------------------------------------------------------------
     task run_phase(uvm_phase phase);
         cgra_seq_item item;
 
@@ -34,7 +65,13 @@ class cgra_driver extends uvm_driver #(cgra_seq_item);
     endtask
 
     // ------------------------------------------------------------------------
-    // Initialize DUT inputs to a safe idle state (reset asserted)
+    // Task: init_signals
+    //
+    // Description: Drives a known-safe idle/reset state on all DUT input
+    //      signals before normal traffic begins.
+    //
+    // Params:
+    //   - none
     // ------------------------------------------------------------------------
     task init_signals();
         @(vif.driver_cb);
@@ -51,7 +88,13 @@ class cgra_driver extends uvm_driver #(cgra_seq_item);
     endtask
 
     // ------------------------------------------------------------------------
-    // Drive one sequence item onto the interface (one clock cycle)
+    // Task: drive_item
+    //
+    // Description: Applies one transaction item to the DUT interface for one
+    //      clock cycle.
+    //
+    // Params:
+    //   - item (input cgra_seq_item): Sequence item to drive.
     // ------------------------------------------------------------------------
     task drive_item(cgra_seq_item item);
         @(vif.driver_cb);

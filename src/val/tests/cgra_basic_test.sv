@@ -1,17 +1,17 @@
 // ============================================================================
-// File   : cgra_basic_test.sv
-// Brief  : Basic end-to-end CGRA test flow.
-//          1. Init and data preload.
-//          2. Tiles / PEs / FUs configuration.
-//             const load -> loop config -> operation mapping -> prologue.
-//          3. Launch.
-//          4. Driver physically transmits packets cycle-by-cycle.
-//          5. Result validation and memory dump.
-//
-// Override build_data_entries(), build_tile_cfgs(), and
-// build_expected_results() in derived tests to supply application-specific
-// programs and checks.
+// Name:         cgra_basic_test.sv
+// Author:        Obregon Fonseca, Erick
+// Create Date:  2026-03-05
+// Last Modify:  2026-03-21
+// Description:  Basic end-to-end CGRA test flow.
+//      1. Init and data preload.
+//      2. Tiles / PEs / FUs configuration. const load -> loop config ->
+//         operation mapping -> prologue.
+//      3. Launch.
+//      4. Driver physically transmits packets cycle-by-cycle.
+//      5. Result validation and memory dump.
 // ============================================================================
+
 class cgra_basic_test extends cgra_base_test;
     `uvm_component_utils(cgra_basic_test)
 
@@ -26,10 +26,28 @@ class cgra_basic_test extends cgra_base_test;
     string legacy_packet_hex_file = "src/gen/packet_stream.hex";
     string program_hex_file = "src/gen/uvm_packet_stream.hex";
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the basic end-to-end CGRA test instance.
+    //
+    // Params:
+    //   - name (input string): Test instance name.
+    //   - parent (input uvm_component): Parent component in UVM hierarchy.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_basic_test", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: run_test_body
+    //
+    // Description: Executes reset, configuration replay, and post-run result
+    //      validation for the default end-to-end CGRA flow.
+    //
+    // Params:
+    //   - phase (input uvm_phase): Active UVM phase handle.
+    // ------------------------------------------------------------------------
     virtual task run_test_body(uvm_phase phase);
         cgra_reset_seq  rst_seq  = cgra_reset_seq::type_id::create("rst_seq");
         cgra_hex_replay_seq hex_replay_seq = cgra_hex_replay_seq::type_id::create("hex_replay_seq");
@@ -71,18 +89,31 @@ class cgra_basic_test extends cgra_base_test;
         `uvm_info(get_type_name(), "cgra_basic_test PASSED", UVM_LOW)
     endtask
 
-    // ------------------------------------------------------------------
-    // Override in derived tests to provide application-specific stimulus.
-    // ------------------------------------------------------------------
-
-    // Populate data-SRAM preload entries (CMD_STORE_REQUEST).
-    // Default: no preload data.
+    // ------------------------------------------------------------------------
+    // Task: build_data_entries
+    //
+    // Description: Hook for derived tests to define SRAM preload data entries.
+    //
+    // Params:
+    //   - data_entries (ref cgra_data_entry_t data_entries[$]): Queue to fill
+    //     with preload entries.
+    // ------------------------------------------------------------------------
     virtual task build_data_entries(ref cgra_data_entry_t data_entries[$]);
     endtask
 
     // Populate per-tile configuration.
     // Default: tile 0, one NAH step, and one entry for each prologue phase
     // so the full reference flow is exercised.
+    // ------------------------------------------------------------------------
+    // Task: build_tile_cfgs
+    //
+    // Description: Hook for derived tests to define per-tile programming
+    //      configuration structures.
+    //
+    // Params:
+    //   - tile_cfgs (ref cgra_tile_cfg tile_cfgs[$]): Queue to fill with tile
+    //     configuration descriptors.
+    // ------------------------------------------------------------------------
     virtual task build_tile_cfgs(ref cgra_tile_cfg tile_cfgs[$]);
         cgra_tile_cfg      tc;
         cgra_ctrl_step_cfg step;
@@ -122,11 +153,29 @@ class cgra_basic_test extends cgra_base_test;
         tile_cfgs.push_back(tc);
     endtask
 
-    // Populate expected CPU result payloads.
-    // Default: no strict data check; derived tests should fill this in.
+    // ------------------------------------------------------------------------
+    // Task: build_expected_results
+    //
+    // Description: Hook for derived tests to define expected CPU payload
+    //      results for scoreboard and post-run checks.
+    //
+    // Params:
+    //   - expected_results (ref logic [31:0] expected_results[$]): Queue to
+    //     fill with expected payload values.
+    // ------------------------------------------------------------------------
     virtual task build_expected_results(ref logic [31:0] expected_results[$]);
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: configure_post_run
+    //
+    // Description: Programs VIF debug/dump controls and mirrors expected
+    //      payloads into interface-accessible arrays.
+    //
+    // Params:
+    //   - expected_results (ref logic [31:0] expected_results[$]): Expected
+    //     payload queue.
+    // ------------------------------------------------------------------------
     task configure_post_run(ref logic [31:0] expected_results[$]);
         vif.dump_enable = enable_memory_dump;
         vif.dump_const_mem_enable = enable_memory_dump;
@@ -142,6 +191,16 @@ class cgra_basic_test extends cgra_base_test;
             vif.expected_result_payloads[i] = expected_results[i];
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: validate_results
+    //
+    // Description: Waits for CPU result handshakes and checks observed
+    //      payloads against expected values within timeout window.
+    //
+    // Params:
+    //   - expected_results (ref logic [31:0] expected_results[$]): Expected
+    //     payload queue.
+    // ------------------------------------------------------------------------
     task validate_results(ref logic [31:0] expected_results[$]);
         bit matched[16];
         int unsigned match_count;
@@ -192,6 +251,15 @@ class cgra_basic_test extends cgra_base_test;
                 post_launch_wait_cycles, expected_results.size(), match_count))
     endtask
 
+    // ------------------------------------------------------------------------
+    // Function: file_exists
+    //
+    // Description: Returns true when file can be opened for read access.
+    //
+    // Params:
+    //   - path (input string): File path to check.
+    // Returns: bit
+    // ------------------------------------------------------------------------
     function bit file_exists(string path);
         int fd;
         fd = $fopen(path, "r");
@@ -201,6 +269,15 @@ class cgra_basic_test extends cgra_base_test;
         return 1'b1;
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: count_hex_lines
+    //
+    // Description: Counts valid hex payload lines in a text file.
+    //
+    // Params:
+    //   - path (input string): File path to scan.
+    // Returns: int
+    // ------------------------------------------------------------------------
     function int count_hex_lines(string path);
         int fd;
         int count;
@@ -223,6 +300,15 @@ class cgra_basic_test extends cgra_base_test;
         return count;
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: validate_generated_hex_artifacts
+    //
+    // Description: Verifies expected generated files exist, contain payload
+    //      lines, and maintain expected IMEM-to-packet size ratio.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     task validate_generated_hex_artifacts();
         int imem_lines;
         int packet_lines;

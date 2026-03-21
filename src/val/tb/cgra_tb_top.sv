@@ -1,8 +1,13 @@
 // ============================================================================
-// File   : cgra_tb_top.sv
-// Brief  : Top-level testbench module.
-//          Instantiates CgraTemplateRTL, the interface, and starts UVM.
+// Name:         cgra_tb_top.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  Top-level verification wrapper that instantiates DUT, binds
+//      assertions, configures UVM virtual interface access, and  owns debug
+//      dump/timeout behavior.
 // ============================================================================
+
 `timescale 1ns/1ps
 
 module cgra_tb_top;
@@ -11,6 +16,11 @@ module cgra_tb_top;
     import cgra_uvm_pkg::*;
     import cgra_pkg::*;
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_0
+    //
+    // Description: Prints non-X constant/control memory contents for tile 0.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_0();
         $display("######### tile 0 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -24,6 +34,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_1
+    //
+    // Description: Prints non-X constant/control memory contents for tile 1.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_1();
         $display("######### tile 1 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -37,6 +52,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_4
+    //
+    // Description: Prints non-X constant/control memory contents for tile 4.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_4();
         $display("######### tile 4 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -50,6 +70,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_5
+    //
+    // Description: Prints non-X constant/control memory contents for tile 5.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_5();
         $display("######### tile 5 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -63,6 +88,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_8
+    //
+    // Description: Prints non-X constant/control memory contents for tile 8.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_8();
         $display("######### tile 8 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -76,6 +106,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_tile_9
+    //
+    // Description: Prints non-X constant/control memory contents for tile 9.
+    // ------------------------------------------------------------------------
     task automatic dump_tile_9();
         $display("######### tile 9 const mem #################");
         for (int i = 0; i < 8; i++) begin
@@ -89,6 +124,11 @@ module cgra_tb_top;
         end
     endtask
 
+    // ------------------------------------------------------------------------
+    // Task: dump_data_memories
+    //
+    // Description: Prints non-X entries from both data memory wrappers.
+    // ------------------------------------------------------------------------
     task automatic dump_data_memories();
         $display("************* data mem 0 *************");
         for (int i = 0; i < 16; i++) begin

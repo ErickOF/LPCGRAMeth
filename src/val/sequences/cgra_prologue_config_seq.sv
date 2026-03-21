@@ -1,14 +1,35 @@
 // ============================================================================
-// File   : cgra_prologue_config_seq.sv
-// Brief  : Phase sequence for prologue FU / routing / FU-crossbar config.
+// Name:         cgra_prologue_config_seq.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-03-12
+// Last Modify:  2026-03-21
+// Description:  Phase sequence for prologue FU / routing / FU-crossbar config.
 // ============================================================================
+
 class cgra_prologue_config_seq extends cgra_program_base_seq;
     `uvm_object_utils(cgra_prologue_config_seq)
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the prologue configuration phase sequence.
+    //
+    // Params:
+    //   - name (input string): Sequence instance name.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_prologue_config_seq");
         super.new(name);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: body
+    //
+    // Description: Sends all configured prologue FU, routing, and FU-crossbar
+    //      control steps for each tile.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     virtual task body();
         init_vif();
         `uvm_info(get_type_name(), "Phase 2d: prologue configuration", UVM_MEDIUM)

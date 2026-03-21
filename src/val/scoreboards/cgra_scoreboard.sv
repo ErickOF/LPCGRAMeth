@@ -1,10 +1,14 @@
-// =============================================================================
-// File   : cgra_scoreboard.sv
-// Brief  : UVM scoreboard for protocol and functional result checks.
-//          1) Verifies no X/Z on critical handshake signals.
-//          2) Verifies each observed CPU result payload matches one expected
-//             operation result configured by the active test.
-// =============================================================================
+// ============================================================================
+// Name:         cgra_scoreboard.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  UVM scoreboard for protocol and functional result checks.
+//      1) Verifies no X/Z on critical handshake signals.
+//      2) Verifies each observed CPU result payload matches one expected
+//         operation result configured by the active test.
+// ============================================================================
+
 class cgra_scoreboard extends uvm_scoreboard;
     `uvm_component_utils(cgra_scoreboard)
 
@@ -18,22 +22,56 @@ class cgra_scoreboard extends uvm_scoreboard;
     logic [31:0] expected_results[$];
     bit expected_matched[$];
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the scoreboard instance and forwards arguments
+    //      to the UVM base class constructor.
+    //
+    // Params:
+    //   - name (input string): Instance name used by UVM hierarchy/reporting.
+    //   - parent (input uvm_component): Parent component in UVM hierarchy.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_scoreboard", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: build_phase
+    //
+    // Description: Creates the analysis implementation export used to receive
+    //      monitor transactions.
+    //
+    // Params:
+    //   - phase (input uvm_phase): UVM build phase handle.
+    // ------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         analysis_export = new("analysis_export", this);
     endfunction
 
-    // -------------------------------------------------------------------------
-    // Called by the monitor analysis port on every observed transaction
-    // -------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Function: write
+    //
+    // Description: Analysis callback that dispatches one observed item to the
+    //      scoreboard checker.
+    //
+    // Params:
+    //   - item (input cgra_seq_item): Observed transaction from monitor.
+    // ------------------------------------------------------------------------
     function void write(cgra_seq_item item);
         check_item(item);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: set_expected_results
+    //
+    // Description: Loads the expected CPU result payload list and resets
+    //      runtime match counters/state.
+    //
+    // Params:
+    //   - results (input logic [31:0] results[$]): Expected payload queue.
+    // ------------------------------------------------------------------------
     function void set_expected_results(logic [31:0] results[$]);
         expected_results.delete();
         expected_matched.delete();
@@ -50,6 +88,15 @@ class cgra_scoreboard extends uvm_scoreboard;
             UVM_LOW)
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: check_item
+    //
+    // Description: Performs protocol checks and expected-result matching for a
+    //      single observed transaction item.
+    //
+    // Params:
+    //   - item (input cgra_seq_item): Observed transaction to validate.
+    // ------------------------------------------------------------------------
     function void check_item(cgra_seq_item item);
         logic [31:0] observed_payload;
         int matched_idx;
@@ -118,6 +165,15 @@ class cgra_scoreboard extends uvm_scoreboard;
 
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: report_phase
+    //
+    // Description: Reports final scoreboard statistics and emits errors for
+    //      unmatched expected results.
+    //
+    // Params:
+    //   - phase (input uvm_phase): UVM report phase handle.
+    // ------------------------------------------------------------------------
     function void report_phase(uvm_phase phase);
         int unmatched;
 

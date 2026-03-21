@@ -1,9 +1,24 @@
 // ============================================================================
-// File   : cgra_if.sv
-// Brief  : SystemVerilog interface for the CgraTemplateRTL testbench.
+// Name:         cgra_if.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  SystemVerilog interface for the CgraTemplateRTL testbench.
 // ============================================================================
+
 `timescale 1ns/1ps
 
+// ----------------------------------------------------------------------------
+// Interface: cgra_if
+//
+// Description: Shared testbench interface for CGRA DUT connectivity. Groups
+//      all driven inputs, observed outputs, and clocking blocks used by UVM
+//      driver and monitor components.
+//
+// Params:
+//   - clk (input logic): Interface clock used by driver/monitor clocking
+//     blocks.
+// ----------------------------------------------------------------------------
 interface cgra_if (input logic clk);
     import cgra_pkg::*;
 

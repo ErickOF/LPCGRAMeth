@@ -1,11 +1,15 @@
 // ============================================================================
-// File   : cgra_ctrl_step_cfg.sv
-// Brief  : Data container for one CGRAConfig control word used by
-//          CMD_CONFIG and all CMD_CONFIG_PROLOGUE_* commands.
-//          Fields mirror CGRAConfig_7_4_2_8_8_3__603a41f5d0e2436f.
-//          The data_payload / data_predicate fields are populated for
-//          prologue commands that also carry a data word.
+// Name:         cgra_ctrl_step_cfg.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-03-11
+// Last Modify:  2026-03-21
+// Description:  Data container for one CGRAConfig control word used by
+//      CMD_CONFIG and all CMD_CONFIG_PROLOGUE_* commands. Fields mirror
+//      CGRAConfig_7_4_2_8_8_3__603a41f5d0e2436f. The data_payload /
+//      data_predicate fields are populated for prologue commands that also
+//      carry a data word.
 // ============================================================================
+
 class cgra_ctrl_step_cfg;
 
     // ---- ctrl-word fields -----------------------------------------------
@@ -24,6 +28,15 @@ class cgra_ctrl_step_cfg;
     logic [31:0]      data_payload;          // data.payload
     logic [0:0]       data_predicate;        // data.predicate
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Initializes all control/data fields to safe default values
+    //      for an inactive (NAH) control step.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     function new();
         operation            = 7'd1;         // OPT_NAH (no-operation)
         fu_in                = '{default: 3'd0};
