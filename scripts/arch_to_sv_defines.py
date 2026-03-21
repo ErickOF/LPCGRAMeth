@@ -109,9 +109,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "input_yaml",
         nargs="?",
-        default=Path("arch/arch_vector_cgra_16x16.yaml"),
+        default=Path("spec/arch/arch_vector_cgra_16x16.yaml"),
         type=Path,
-        help="Input YAML file path (default: arch/arch_vector_cgra_16x16.yaml)",
+        help="Input YAML file path (default: spec/arch/arch_vector_cgra_16x16.yaml)",
     )
     parser.add_argument(
         "-o",
