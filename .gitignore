@@ -9,3 +9,6 @@ novas.rc
 tr_db.log
 ucli.key
 vc_hdrs.h
+
+# Codegen
+src/gen/
