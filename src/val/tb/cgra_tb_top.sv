@@ -144,6 +144,7 @@ module cgra_tb_top;
         .clk                   (clk                   ),
         .reset                 (reset                 ),
         .recv_from_cpu_pkt__rdy(recv_from_cpu_pkt__rdy),
+        .send_to_cpu_pkt__msg  (send_to_cpu_pkt__msg  ),
         .send_to_cpu_pkt__val  (send_to_cpu_pkt__val  ),
         .send_to_cpu_pkt__rdy  (send_to_cpu_pkt__rdy  )
     );

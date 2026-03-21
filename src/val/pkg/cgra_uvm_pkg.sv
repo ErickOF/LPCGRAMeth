@@ -11,6 +11,21 @@ package cgra_uvm_pkg;
     import uvm_pkg::*;
     import cgra_pkg::*;
     `include "uvm_macros.svh"
+    `include "cgra_opcodes.svh"
+
+    typedef enum logic [6:0] {
+        CGRA_OP_OPT_NAH       = `OPT_NAH,
+        CGRA_OP_OPT_ADD       = `OPT_ADD,
+        CGRA_OP_OPT_MUL       = `OPT_MUL,
+        CGRA_OP_OPT_LD        = `OPT_LD,
+        CGRA_OP_OPT_DIV       = `OPT_DIV,
+        CGRA_OP_OPT_REM       = `OPT_REM,
+        CGRA_OP_OPT_ADD_CONST = `OPT_ADD_CONST,
+        CGRA_OP_OPT_PHI_CONST = `OPT_PHI_CONST,
+        CGRA_OP_OPT_EQ_CONST  = `OPT_EQ_CONST,
+        CGRA_OP_OPT_EXT       = `OPT_EXT,
+        CGRA_OP_OPT_BRH       = `OPT_BRH
+    } cgra_opcode_e;
 
     // ------------------------------------------------------------------------
     // TB-only types (structs / unions must live in a package)
@@ -41,6 +56,7 @@ package cgra_uvm_pkg;
     `include "cgra_operation_map_seq.sv"
     `include "cgra_prologue_config_seq.sv"
     `include "cgra_launch_seq.sv"
+    `include "cgra_hex_replay_seq.sv"
     `include "cgra_config_seq.sv"
 
     // ------------------------------------------------------------------------

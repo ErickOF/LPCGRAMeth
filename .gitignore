@@ -10,5 +10,8 @@ tr_db.log
 ucli.key
 vc_hdrs.h
 
-# Codegen
+# Code generation artifacts. They should not be committed to version control.
 src/gen/
+
+# IDE-specific files. They should not be committed to version control.
+.vscode/

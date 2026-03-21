@@ -1,0 +1,13 @@
+{
+  "OPT_ADD": 2,
+  "OPT_ADD_CONST": 25,
+  "OPT_BRH": 1,
+  "OPT_DIV": 26,
+  "OPT_EQ_CONST": 33,
+  "OPT_EXT": 12,
+  "OPT_LD": 12,
+  "OPT_MUL": 7,
+  "OPT_NAH": 1,
+  "OPT_PHI_CONST": 32,
+  "OPT_REM": 44
+}

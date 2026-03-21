@@ -74,6 +74,8 @@ VPD_FILE  := $(SIM_DIR)/wave.vpd
 FSDB_FILE := $(SIM_DIR)/wave.fsdb
 ARCH_DEFINES_FILE := $(GEN_DIR)/cgra_arch_defines.svh
 IMEM_FILE         := $(GEN_DIR)/imem.hex
+OPCODE_JSON_FILE  := spec/opcodes.json
+OPCODE_SVH_FILE   := $(GEN_DIR)/cgra_opcodes.svh
 
 # KDB directories produced by VCS -kdb (name follows the -o output binary)
 RTL_KDB_DIR := $(SIM_DIR)/simv_rtl.kdb
@@ -148,7 +150,10 @@ validate_inputs:
 
 gen_from_spec: validate_inputs | $(GEN_DIR)
 	$(PYTHON) scripts/arch_to_sv_defines.py $(ARCH_FILE) -o $(ARCH_DEFINES_FILE)
-	$(PYTHON) scripts/json_to_imem.py $(MAP_FILE) -o $(IMEM_FILE)
+	$(PYTHON) scripts/json_to_imem.py $(MAP_FILE) -o $(IMEM_FILE) \
+		--packet-dump $(GEN_DIR)/packet_stream.hex \
+		--opcodes $(OPCODE_JSON_FILE) --opcode-svh $(OPCODE_SVH_FILE) \
+		--uvm-packet-dump $(GEN_DIR)/uvm_packet_stream.hex
 
 # -----------------------------------------------------------------------------
 # RTL-only targets
@@ -227,7 +232,8 @@ inspect_verdi:
 # -----------------------------------------------------------------------------
 clean:
 	rm -rf $(SIM_DIR) csrc vc_hdrs.h ucli.key *.log DVEfiles novas.* verdiLog \
-	       $(ARCH_DEFINES_FILE) $(IMEM_FILE)
+	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) \
+		   $(GEN_DIR)/uvm_packet_stream.hex
 
 help:
 	@echo ""
