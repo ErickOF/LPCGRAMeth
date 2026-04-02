@@ -1,7 +1,12 @@
 // ============================================================================
-// File   : cgra_seq_item.sv
-// Brief  : UVM sequence item - transaction descriptor for CgraTemplateRTL.
+// Name:         cgra_seq_item.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  UVM sequence item - transaction descriptor for
+//      CgraTemplateRTL.
 // ============================================================================
+
 class cgra_seq_item extends uvm_sequence_item;
     `uvm_object_utils(cgra_seq_item)
 
@@ -54,10 +59,27 @@ class cgra_seq_item extends uvm_sequence_item;
     constraint c_reset_rare { reset dist { 1'b0 := 95, 1'b1 := 5 }; }
 
     // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the sequence item object.
+    //
+    // Params:
+    //   - name (input string): Sequence item object name.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_seq_item");
         super.new(name);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Function: convert2string
+    //
+    // Description: Returns a compact string summary of key stimulus and
+    //      observed handshake fields.
+    //
+    // Params:
+    //   - none
+    // Returns: string
+    // ------------------------------------------------------------------------
     function string convert2string();
         return $sformatf(
             "reset=%0b addr_lo=0x%03h addr_hi=0x%03h cgra_id=%0d cpu_val=%0b noc_val=%0b cpu_rdy_out=%0b send_cpu_val=%0b",

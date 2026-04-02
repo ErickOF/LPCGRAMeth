@@ -23,6 +23,7 @@
 +incdir+src/val/coverage
 +incdir+src/val/env
 +incdir+src/val/tests
++incdir+src/gen
 
 # UVM package (all TB classes in compilation order)
 src/val/pkg/cgra_uvm_pkg.sv

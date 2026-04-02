@@ -1,21 +1,42 @@
 // ============================================================================
-// File   : cgra_base_seq.sv
-// Brief  : UVM base sequence - provides the minimal foundation for all CGRA
-//          sequences. The default body drives n_transactions idle clock cycles
-//          (reset de-asserted, all channels quiet) so it can be used stand-
-//          alone after a reset sequence or as a simple passthrough base.
-//          Extend this class to add protocol-specific stimulus.
+// Name:         cgra_base_seq.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  UVM base sequence - provides the minimal foundation for all
+//      CGRA sequences. The default body drives n_transactions idle clock
+//      cycles (reset de-asserted, all channels quiet) so it can be used
+//      stand-alone after a reset sequence or as a simple passthrough base.
+//      Extend this class to add protocol-specific stimulus.
 // ============================================================================
+
 class cgra_base_seq extends uvm_sequence #(cgra_seq_item);
     `uvm_object_utils(cgra_base_seq)
 
     // Number of idle cycles to drive in the default body
     int unsigned n_transactions = 10;
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the base sequence object.
+    //
+    // Params:
+    //   - name (input string): Sequence instance name.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_base_seq");
         super.new(name);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: body
+    //
+    // Description: Drives a configurable number of idle transactions with
+    //      reset de-asserted and channels quiescent.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     virtual task body();
         cgra_seq_item item;
 

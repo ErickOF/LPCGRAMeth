@@ -1,14 +1,35 @@
 // ============================================================================
-// File   : cgra_operation_map_seq.sv
-// Brief  : Phase sequence for main operation/control mapping (CMD_CONFIG).
+// Name:         cgra_operation_map_seq.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-03-12
+// Last Modify:  2026-03-21
+// Description:  Phase sequence for main operation/control mapping (CMD_CONFIG).
 // ============================================================================
+
 class cgra_operation_map_seq extends cgra_program_base_seq;
     `uvm_object_utils(cgra_operation_map_seq)
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the operation-mapping phase sequence.
+    //
+    // Params:
+    //   - name (input string): Sequence instance name.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_operation_map_seq");
         super.new(name);
     endfunction
 
+    // ------------------------------------------------------------------------
+    // Task: body
+    //
+    // Description: Sends CMD_CONFIG control words for each control step of
+    //      each configured tile.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     virtual task body();
         init_vif();
         `uvm_info(get_type_name(), "Phase 2c: operation mapping", UVM_MEDIUM)

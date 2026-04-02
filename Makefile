@@ -2,32 +2,37 @@
 # Makefile - CGRA Simulation (Synopsys VCS + DVE/Verdi)
 #
 # -- RTL-only (syntax / elaboration check, static browser) --------------------
-#   make compile_rtl              compile + elaborate CgraTemplateRTL, generate KDB
-#   make browse_rtl               open RTL hierarchy in Verdi (no simulation)
-#   make browse_rtl VIEWER=dve    open RTL hierarchy in DVE
+#   make compile_rtl              	compile + elaborate CgraTemplateRTL,
+#					             	generate KDB
+#   make browse_rtl               	open RTL hierarchy in Verdi (no simulation)
+#   make browse_rtl VIEWER=dve    	open RTL hierarchy in DVE
 #
 # -- RTL + UVM Testbench ------------------------------------------------------
-#   make compile                  compile TB (val.f) - alias for compile_val
-#   make compile_val              compile RTL + UVM TB
-#   make sim                      compile_val + run (TEST=cgra_smoke_test)
-#   make sim TEST=<name>          run a specific UVM test
-#   make sim SEED=<n>             run with a fixed random seed
+#   make compile                  	compile TB (val.f) - alias for compile_val
+#   make compile_val              	compile RTL + UVM TB
+#   make sim                      	generate src/gen + compile_val + run
+#									(TEST=cgra_basic_test)
+#   make sim TEST=<name>          	run a specific UVM test
+#   make sim ARCH=<name> MAP=<name> use spec/arch/<name>.yaml and
+#									spec/map/<name>.json
+#   make sim SEED=<n>             	run with a fixed random seed
 #
 # -- Waveforms (RTL+TB simulation) --------------------------------------------
-#   make waves                    sim + open viewer (VIEWER=verdi default)
-#   make waves VIEWER=dve         sim + open DVE (VPD)
-#   make waves VIEWER=verdi       sim + open Verdi (FSDB)
-#   make waves_dve                sim + dump VPD + open DVE
-#   make waves_verdi              sim + dump FSDB + open Verdi
+#   make waves                    	sim + open viewer (VIEWER=verdi default)
+#   make waves VIEWER=dve         	sim + open DVE (VPD)
+#   make waves VIEWER=verdi       	sim + open Verdi (FSDB)
+#   make waves_dve                	sim + dump VPD + open DVE
+#   make waves_verdi              	sim + dump FSDB + open Verdi
 #
 # -- Inspection (open existing waveform without re-running) -------------------
-#   make inspect                  open last waveform (VIEWER=verdi default)
-#   make inspect VIEWER=dve       open last VPD in DVE
-#   make inspect VIEWER=verdi     open last FSDB in Verdi
+#   make inspect                  	open last waveform (VIEWER=verdi default)
+#   make inspect VIEWER=dve       	open last VPD in DVE
+#   make inspect VIEWER=verdi     	open last FSDB in Verdi
 #
 # -- Misc ---------------------------------------------------------------------
-#   make clean                    remove all generated artifacts
-#   make help                     print this message
+#   make clean                    	remove generated artifacts (including
+#									src/gen outputs)
+#   make help                     	print this message
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -41,16 +46,36 @@ TEST     ?= cgra_basic_test
 UVM_HOME ?= $(shell echo $$UVM_HOME)
 # Default waveform viewer: verdi | dve
 VIEWER   ?= verdi
+PYTHON   ?= python
+
+# Specification-driven generation inputs
+ARCH_DIR ?= spec/arch
+MAP_DIR  ?= $(if $(wildcard spec/map),spec/map,spec/maps)
+ARCH     ?= arch_vector_cgra_16x16
+MAP      ?= default
+
+# ARCH/MAP are treated as names only; full paths are inferred automatically.
+# This accepts values like "foo", "foo.yaml", or "dir/foo.yaml" and normalizes
+# to "$(ARCH_DIR)/foo.yaml". Same rule applies to MAP with .json.
+ARCH_NAME := $(basename $(notdir $(ARCH)))
+MAP_NAME  := $(basename $(notdir $(MAP)))
+ARCH_FILE := $(ARCH_DIR)/$(ARCH_NAME).yaml
+MAP_FILE  := $(MAP_DIR)/$(MAP_NAME).json
 
 # -----------------------------------------------------------------------------
 # Directories
 # -----------------------------------------------------------------------------
 SIM_DIR := sim_out
 LOG_DIR := $(SIM_DIR)/logs
+GEN_DIR := src/gen
 
 # Waveform output paths
 VPD_FILE  := $(SIM_DIR)/wave.vpd
 FSDB_FILE := $(SIM_DIR)/wave.fsdb
+ARCH_DEFINES_FILE := $(GEN_DIR)/cgra_arch_defines.svh
+IMEM_FILE         := $(GEN_DIR)/imem.hex
+OPCODE_JSON_FILE  := spec/opcodes.json
+OPCODE_SVH_FILE   := $(GEN_DIR)/cgra_opcodes.svh
 
 # KDB directories produced by VCS -kdb (name follows the -o output binary)
 RTL_KDB_DIR := $(SIM_DIR)/simv_rtl.kdb
@@ -102,6 +127,7 @@ SIM_FLAGS := \
 # Targets
 # -----------------------------------------------------------------------------
 .PHONY: all \
+	validate_inputs gen_from_spec      \
         compile_rtl browse_rtl            \
         compile compile_val sim           \
         waves waves_dve waves_verdi       \
@@ -110,8 +136,24 @@ SIM_FLAGS := \
 
 all: sim
 
-$(SIM_DIR) $(LOG_DIR):
+$(SIM_DIR) $(LOG_DIR) $(GEN_DIR):
 	mkdir -p $@
+
+# -----------------------------------------------------------------------------
+# Spec generation targets (ARCH + MAP)
+# -----------------------------------------------------------------------------
+validate_inputs:
+	@test -f $(ARCH_FILE) \
+		|| (echo "[ERROR] ARCH file not found: $(ARCH_FILE)" && exit 1)
+	@test -f $(MAP_FILE) \
+		|| (echo "[ERROR] MAP file not found: $(MAP_FILE)" && exit 1)
+
+gen_from_spec: validate_inputs | $(GEN_DIR)
+	$(PYTHON) scripts/arch_to_sv_defines.py $(ARCH_FILE) -o $(ARCH_DEFINES_FILE)
+	$(PYTHON) scripts/json_to_imem.py $(MAP_FILE) -o $(IMEM_FILE) \
+		--packet-dump $(GEN_DIR)/packet_stream.hex \
+		--opcodes $(OPCODE_JSON_FILE) --opcode-svh $(OPCODE_SVH_FILE) \
+		--uvm-packet-dump $(GEN_DIR)/uvm_packet_stream.hex
 
 # -----------------------------------------------------------------------------
 # RTL-only targets
@@ -143,7 +185,7 @@ compile_val: | $(SIM_DIR) $(LOG_DIR)
 	$(VCS) $(VAL_FLAGS) -top cgra_tb_top
 
 ## Compile + run UVM simulation
-sim: compile_val
+sim: gen_from_spec compile_val
 	$(SIM_DIR)/simv $(SIM_FLAGS)
 
 # -----------------------------------------------------------------------------
@@ -154,7 +196,7 @@ waves:
 	$(MAKE) waves_$(VIEWER)
 
 ## Simulate, dump VPD, then open DVE
-waves_dve: compile_val
+waves_dve: gen_from_spec compile_val
 	$(SIM_DIR)/simv $(SIM_FLAGS) \
 	    +vpdfile+$(VPD_FILE)     \
 	    +vpdon
@@ -162,7 +204,7 @@ waves_dve: compile_val
 
 ## Simulate, dump FSDB, then open Verdi
 ## -kdb / -debug_access+all already set at compile time (VAL_FLAGS).
-waves_verdi: compile_val
+waves_verdi: gen_from_spec compile_val
 	$(SIM_DIR)/simv $(SIM_FLAGS)    \
 	    +fsdbDumpvars+0+cgra_tb_top \
 	    +fsdbDumpSVA
@@ -189,37 +231,42 @@ inspect_verdi:
 # Housekeeping
 # -----------------------------------------------------------------------------
 clean:
-	rm -rf $(SIM_DIR) csrc vc_hdrs.h ucli.key *.log DVEfiles novas.* verdiLog
+	rm -rf $(SIM_DIR) csrc vc_hdrs.h ucli.key *.log DVEfiles novas.* verdiLog \
+	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) \
+		   $(GEN_DIR)/uvm_packet_stream.hex
 
 help:
 	@echo ""
 	@echo "  -- RTL only -----------------------------------------------------"
-	@echo "  make compile_rtl          	 Compile RTL (syntax/elab check)"
-	@echo "  make elab_rtl             	 Elaborate RTL and generate KDB"
-	@echo "  make browse_rtl           	 Open RTL in Verdi static browser"
-	@echo "  make browse_rtl VIEWER=dve	 Open RTL in DVE"
+	@echo "  make compile_rtl          	 	Compile RTL (syntax/elab check)"
+	@echo "  make browse_rtl           	 	Open RTL in Verdi static browser"
+	@echo "  make browse_rtl VIEWER=dve	 	Open RTL in DVE"
 	@echo ""
 	@echo "  -- RTL + UVM TB -------------------------------------------------"
-	@echo "  make compile                Compile RTL + UVM TB"
-	@echo "  make sim                    Compile + run (TEST=$(TEST))"
-	@echo "  make sim TEST=<name>        Run a specific UVM test"
-	@echo "  make sim SEED=<n>           Use a fixed random seed"
+	@echo "  make compile                	Compile RTL + UVM TB"
+	@echo "  make sim ARCH=<arch> MAP=<map> Generate src/gen + compile_val + run"
+	@echo "                                 (name-only; paths are inferred)"
+	@echo "  make sim                    	Compile_val + run (TEST=$(TEST), ARCH=$(ARCH), MAP=$(MAP))"
+	@echo "  make sim TEST=<name>        	Run a specific UVM test"
+	@echo "  make sim ARCH=<name>        	Uses: $(ARCH_DIR)/<name>.yaml"
+	@echo "  make sim MAP=<name>         	Uses: $(MAP_DIR)/<name>.json"
+	@echo "  make sim SEED=<n>           	Use a fixed random seed"
 	@echo ""
 	@echo "  -- Waveforms ----------------------------------------------------"
-	@echo "  make waves                  Sim + open viewer (VIEWER=$(VIEWER))"
-	@echo "  make waves VIEWER=dve       Sim + open DVE (VPD)"
-	@echo "  make waves VIEWER=verdi     Sim + open Verdi (FSDB)"
-	@echo "  make waves_dve              Sim + dump VPD + open DVE"
-	@echo "  make waves_verdi            Sim + dump FSDB + open Verdi"
+	@echo "  make waves                  	Sim + open viewer (VIEWER=$(VIEWER))"
+	@echo "  make waves VIEWER=dve       	Sim + open DVE (VPD)"
+	@echo "  make waves VIEWER=verdi     	Sim + open Verdi (FSDB)"
+	@echo "  make waves_dve              	Sim + dump VPD + open DVE"
+	@echo "  make waves_verdi            	Sim + dump FSDB + open Verdi"
 	@echo ""
 	@echo "  -- Inspection (no re-run) ---------------------------------------"
-	@echo "  make inspect                Open last wave (VIEWER=$(VIEWER))"
-	@echo "  make inspect VIEWER=dve     Open last VPD in DVE"
-	@echo "  make inspect VIEWER=verdi   Open last FSDB in Verdi"
+	@echo "  make inspect                	Open last wave (VIEWER=$(VIEWER))"
+	@echo "  make inspect VIEWER=dve     	Open last VPD in DVE"
+	@echo "  make inspect VIEWER=verdi   	Open last FSDB in Verdi"
 	@echo ""
-	@echo "  make clean                  Remove all generated files"
+	@echo "  make clean                  	Remove all generated files"
 	@echo ""
-	@echo "  make waves_dve         	 Sim + open DVE directly"
-	@echo "  make waves_verdi       	 Sim + open Verdi directly"
-	@echo "  make clean             	 Remove all generated files"
+	@echo "  make waves_dve         	 	Sim + open DVE directly"
+	@echo "  make waves_verdi       	 	Sim + open Verdi directly"
+	@echo "  make clean             	 	Remove all generated files"
 	@echo ""

@@ -1,12 +1,13 @@
 // ============================================================================
-// File   : cgra_tile_cfg.sv
-// Brief  : Bundles all configuration data needed to program one CGRA tile.
-//          Used by cgra_config_seq to group the per-tile stimulus:
-//          constant register, loop-count parameters, kernel control words,
-//          and all prologue control words.
+// Name:         cgra_tile_cfg.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-03-11
+// Last Modify:  2026-03-21
+// Description:  Per-tile aggregate configuration object containing const,
+//      loop, main control, and prologue control descriptors.
 // ============================================================================
-class cgra_tile_cfg;
 
+class cgra_tile_cfg;
     logic [8:0]  tile_id;           // destination tile ID (0 - 255)
     logic [31:0] const_val;         // CMD_CONST : constant register value
     logic [31:0] count_per_iter;    // CMD_CONFIG_COUNT_PER_ITER
@@ -20,6 +21,15 @@ class cgra_tile_cfg;
     cgra_ctrl_step_cfg prologue_routing[];  // CMD_CONFIG_PROLOGUE_ROUTING_CROSSBAR
     cgra_ctrl_step_cfg prologue_fu_xbar[];  // CMD_CONFIG_PROLOGUE_FU_CROSSBAR
 
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Initializes per-tile configuration container fields with
+    //      default values and empty step arrays.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     function new();
         tile_id          = 9'd0;
         const_val        = 32'd0;

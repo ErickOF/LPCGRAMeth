@@ -1,16 +1,43 @@
 // ============================================================================
-// File   : cgra_uvm_pkg.sv
-// Brief  : UVM package - includes all TB classes in the correct
-//          compilation / elaboration order.
-//
-// Compilation order matters:
-//   seq_item -> sequences -> sequencer -> driver -> monitor -> agent
-//   -> scoreboard -> coverage -> env -> tests
+// Name:         cgra_uvm_pkg.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-02-28
+// Last Modify:  2026-03-21
+// Description:  UVM package - includes all TB classes in the correct
+//      compilation / elaboration order.
 // ============================================================================
+
 package cgra_uvm_pkg;
     import uvm_pkg::*;
     import cgra_pkg::*;
     `include "uvm_macros.svh"
+    `include "cgra_opcodes.svh"
+
+    typedef enum logic [6:0] {
+        CGRA_OP_OPT_NAH       = `OPT_NAH,
+        CGRA_OP_OPT_ADD       = `OPT_ADD,
+        CGRA_OP_OPT_MUL       = `OPT_MUL,
+        CGRA_OP_OPT_LD        = `OPT_LD,
+        CGRA_OP_OPT_DIV       = `OPT_DIV,
+        CGRA_OP_OPT_REM       = `OPT_REM,
+        CGRA_OP_OPT_ADD_CONST = `OPT_ADD_CONST,
+        CGRA_OP_OPT_PHI_CONST = `OPT_PHI_CONST,
+        CGRA_OP_OPT_EQ_CONST  = `OPT_EQ_CONST,
+        CGRA_OP_OPT_EXT       = `OPT_EXT,
+        CGRA_OP_OPT_BRH       = `OPT_BRH
+    } cgra_opcode_e;
+
+    typedef enum logic [4:0] {
+        CMD_LAUNCH                       = 5'd0,
+        CMD_CONFIG                       = 5'd3,
+        CMD_CONFIG_PROLOGUE_FU           = 5'd4,
+        CMD_CONFIG_PROLOGUE_FU_CROSSBAR  = 5'd5,
+        CMD_CONFIG_PROLOGUE_ROUTING_XBAR = 5'd6,
+        CMD_CONFIG_TOTAL_CTRL_COUNT      = 5'd7,
+        CMD_CONFIG_COUNT_PER_ITER        = 5'd8,
+        CMD_STORE_REQUEST                = 5'd12,
+        CMD_CONST                        = 5'd13
+    } cgra_cmd_e;
 
     // ------------------------------------------------------------------------
     // TB-only types (structs / unions must live in a package)
@@ -41,6 +68,7 @@ package cgra_uvm_pkg;
     `include "cgra_operation_map_seq.sv"
     `include "cgra_prologue_config_seq.sv"
     `include "cgra_launch_seq.sv"
+    `include "cgra_hex_replay_seq.sv"
     `include "cgra_config_seq.sv"
 
     // ------------------------------------------------------------------------

@@ -1,60 +1,40 @@
 // ============================================================================
-// File   : cgra_config_seq.sv
-// Brief  : CGRA configuration (SRAM load) UVM sequence for CgraTemplateRTL.
-//
-// Programs one or more tiles by sending IntraCgra packets through the CPU
-// receive channel (recv_from_cpu_pkt).  Back-pressure
-// (recv_from_cpu_pkt__rdy == 0) is respected: the same packet is re-driven
-// every clock cycle until the DUT asserts rdy (VAL/RDY handshake).
-//
-// Configuration protocol executed inside body() (per tile, in order):
-//
-//   Phase 1 - Data SRAM preload (one CMD_STORE_REQUEST per entry):
-//     cmd = 5'd12  CMD_STORE_REQUEST  - write a 32-bit word to data SRAM
-//
-//   Phase 2 - Per-tile control-memory configuration:
-//     cmd = 5'd13  CMD_CONST                      - constant register value
-//     cmd = 5'd8   CMD_CONFIG_COUNT_PER_ITER      - # control steps per loop
-//     cmd = 5'd7   CMD_CONFIG_TOTAL_CTRL_COUNT    - total control steps
-//     cmd = 5'd3   CMD_CONFIG                     - one config word per step
-//     cmd = 5'd4   CMD_CONFIG_PROLOGUE_FU         - prologue FU config
-//     cmd = 5'd6   CMD_CONFIG_PROLOGUE_ROUTING_CROSSBAR
-//     cmd = 5'd5   CMD_CONFIG_PROLOGUE_FU_CROSSBAR
-//
-//   Phase 3 - Execution launch (optional, see do_launch):
-//     cmd = 5'd0   CMD_LAUNCH
-//
-// Command codes mirror localparams of ControllerRTL__5c69f8e556492ab7.
-//
-// Packet type: IntraCgraPacket_4_4x1_256_8_2_CgraPayload__7c76b76106625f8d
-// Ctrl type  : CGRAConfig_7_4_2_8_8_3__603a41f5d0e2436f
-//              (12-port routing_xbar_outport [11:0][3:0],
-//               12-port fu_xbar_outport      [11:0][1:0],
-//               ctrl_addr 3-bit, data_addr 9-bit)
-//
-// Depends on (included before this file in cgra_uvm_pkg):
-//   cgra_data_entry_t  - typedef struct in cgra_uvm_pkg
-//   cgra_ctrl_step_cfg - class in cgra_ctrl_step_cfg.sv
-//   cgra_tile_cfg      - class in cgra_tile_cfg.sv
+// Name:         cgra_config_seq.sv
+// Author:       Obregon Fonseca, Erick
+// Create Date:  2026-03-11
+// Last Modify:  2026-03-21
+// Description:  CGRA configuration (SRAM load) UVM sequence for
+//      CgraTemplateRTL.
 // ============================================================================
 
-// ----------------------------------------------------------------------------
-// cgra_config_seq
-// ----------------------------------------------------------------------------
 class cgra_config_seq extends cgra_program_base_seq;
     `uvm_object_utils(cgra_config_seq)
 
     // Set to 0 to suppress CMD_LAUNCH at the end (useful when chaining)
     bit do_launch = 1'b1;
 
-    // ------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Function: new
+    //
+    // Description: Constructs the top-level CGRA programming orchestration
+    //      sequence.
+    //
+    // Params:
+    //   - name (input string): Sequence instance name.
+    // ------------------------------------------------------------------------
     function new(string name = "cgra_config_seq");
         super.new(name);
     endfunction
 
-    // ==================================================================
-    // SEQUENCE BODY
-    // ==================================================================
+    // ------------------------------------------------------------------------
+    // Task: body
+    //
+    // Description: Runs preload, per-tile configuration phases, and optional
+    //      launch in the required order.
+    //
+    // Params:
+    //   - none
+    // ------------------------------------------------------------------------
     virtual task body();
         cgra_preload_seq preload_seq;
         cgra_const_load_seq const_load_seq;
