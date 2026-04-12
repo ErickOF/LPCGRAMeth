@@ -51,7 +51,7 @@ PYTHON   ?= python
 # Specification-driven generation inputs
 ARCH_DIR ?= spec/arch
 MAP_DIR  ?= $(if $(wildcard spec/map),spec/map,spec/maps)
-ARCH     ?= arch_vector_cgra_16x16
+ARCH     ?= default
 MAP      ?= default
 
 # ARCH/MAP are treated as names only; full paths are inferred automatically.
@@ -65,9 +65,9 @@ MAP_FILE  := $(MAP_DIR)/$(MAP_NAME).json
 # -----------------------------------------------------------------------------
 # Directories
 # -----------------------------------------------------------------------------
-SIM_DIR := sim_out
-LOG_DIR := $(SIM_DIR)/logs
-GEN_DIR := src/gen
+SIM_DIR      := sim_out
+LOG_DIR      := $(SIM_DIR)/logs
+GEN_DIR      := src/gen
 FILELIST_DIR := src/filelist
 RTL_FILELIST := $(FILELIST_DIR)/rtl.f
 VAL_FILELIST := $(FILELIST_DIR)/val.f
@@ -301,8 +301,8 @@ inspect_verdi:
 # -----------------------------------------------------------------------------
 clean:
 	rm -rf $(SIM_DIR) csrc vc_hdrs.h ucli.key *.log DVEfiles novas.* verdiLog \
-	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) $(OPCODE_JSON_FILE) \
-		   $(GEN_DIR)/uvm_packet_stream.hex
+	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) \
+		   $(OPCODE_JSON_FILE) $(GEN_DIR)/uvm_packet_stream.hex
 
 help:
 	@echo ""
