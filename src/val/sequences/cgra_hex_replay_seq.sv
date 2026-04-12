@@ -43,16 +43,15 @@ class cgra_hex_replay_seq extends cgra_program_base_seq;
     //   - none
     // ------------------------------------------------------------------------
     virtual task body();
-        // CGRAConfig_6_4_10_12 is 6+1+12+48+10 = 77 bits; use 80-bit container
-        localparam int WOPT_W = $bits(CGRAConfig_6_4_10_12);
-
         int          fd;
         int          line_num;
         int          sent_count;
         string       line;
         logic [7:0]  tile_id_raw;
         logic [3:0]  waddr_raw;
-        logic [WOPT_W-1:0] wopt_raw;
+        logic [76:0] wopt_raw;   // CGRAConfig_6_4_10_12 is 77 bits
+        logic [5:0]  tile_id;
+        logic [2:0]  waddr;
         CGRAConfig_6_4_10_12 wopt_msg;
 
         init_vif();
@@ -78,11 +77,10 @@ class cgra_hex_replay_seq extends cgra_program_base_seq;
                 continue;
 
             if ($sscanf(line, "%h %h %h", tile_id_raw, waddr_raw, wopt_raw) == 3) begin
+                tile_id  = tile_id_raw[5:0];
+                waddr    = waddr_raw[2:0];
                 wopt_msg = CGRAConfig_6_4_10_12'(wopt_raw);
-                send_write_with_handshake(
-                    logic [5:0]'(tile_id_raw),
-                    logic [2:0]'(waddr_raw),
-                    wopt_msg);
+                send_write_with_handshake(tile_id, waddr, wopt_msg);
                 sent_count++;
             end
         end

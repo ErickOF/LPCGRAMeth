@@ -26,12 +26,8 @@ package cgra_uvm_pkg;
     `include "cgra_ctrl_step_cfg.sv"
     `include "cgra_tile_cfg.sv"
     `include "cgra_program_base_seq.sv"
-    `include "cgra_preload_seq.sv"
-    `include "cgra_const_load_seq.sv"
-    `include "cgra_loop_config_seq.sv"
     `include "cgra_operation_map_seq.sv"
     `include "cgra_prologue_config_seq.sv"
-    `include "cgra_launch_seq.sv"
     `include "cgra_hex_replay_seq.sv"
     `include "cgra_config_seq.sv"
 
