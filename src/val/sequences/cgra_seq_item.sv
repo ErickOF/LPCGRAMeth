@@ -2,9 +2,13 @@
 // Name:         cgra_seq_item.sv
 // Author:       Obregon Fonseca, Erick
 // Create Date:  2026-02-28
-// Last Modify:  2026-03-21
+// Last Modify:  2026-04-12
 // Description:  UVM sequence item - transaction descriptor for
 //      CgraTemplateRTL.
+//
+//      Each item represents one clock cycle of stimulus targeting a single
+//      tile's write-address and write-option channels, plus sampled ready
+//      outputs from that tile.
 // ============================================================================
 
 class cgra_seq_item extends uvm_sequence_item;
@@ -14,49 +18,34 @@ class cgra_seq_item extends uvm_sequence_item;
     // Driven fields  (DUT inputs, set by the driver each cycle)
     // ------------------------------------------------------------------------
     rand logic       reset;
-    rand logic [8:0] address_lower;
-    rand logic [8:0] address_upper;
-    rand logic [1:0] cgra_id;
+    rand logic [5:0] tile_id;          // target tile index (0-63)
 
-    // CPU receive channel
-    IntraCgraPacket_4_4x1_256_8_2_CgraPayload__7c76b76106625f8d recv_from_cpu_pkt__msg;
-    rand logic recv_from_cpu_pkt__val;
+    // Write-address channel for the targeted tile
+    rand logic       waddr_en;
+    rand logic [2:0] waddr_msg;        // ctrl-mem word address
 
-    // Inter-CGRA NoC receive channel
-    InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b recv_from_inter_cgra_noc__msg;
-    rand logic recv_from_inter_cgra_noc__val;
-
-    // Back-pressure signals driven by TB toward DUT output channels
-    rand logic send_to_cpu_pkt__rdy;
-    rand logic send_to_inter_cgra_noc__rdy;
+    // Write-option channel for the targeted tile
+    rand logic              wopt_en;
+    rand CGRAConfig_6_4_10_12 wopt_msg;  // one CGRAConfig to program
 
     // ------------------------------------------------------------------------
     // Observed fields  (DUT outputs, filled by monitor - not randomized)
     // ------------------------------------------------------------------------
-    logic recv_from_cpu_pkt__rdy;
-    logic recv_from_inter_cgra_noc__rdy;
-
-    IntraCgraPacket_4_4x1_256_8_2_CgraPayload__7c76b76106625f8d send_to_cpu_pkt__msg;
-    logic send_to_cpu_pkt__val;
-
-    InterCgraPacket_4_4x1_256_8_4_CgraPayload__0bc91b9c3f724b0b send_to_inter_cgra_noc__msg;
-    logic send_to_inter_cgra_noc__val;
+    logic waddr_rdy;
+    logic wopt_rdy;
 
     // ------------------------------------------------------------------------
     // Constraints
     // ------------------------------------------------------------------------
-    // Keep channels idle by default; override in specialized sequences
-    constraint c_channels_idle {
-        recv_from_cpu_pkt__val        == 1'b0;
-        recv_from_inter_cgra_noc__val == 1'b0;
-    }
-    // Accept all DUT output traffic by default (no back-pressure)
-    constraint c_accept_all {
-        send_to_cpu_pkt__rdy        == 1'b1;
-        send_to_inter_cgra_noc__rdy == 1'b1;
+    // Keep channels idle by default; override in programming sequences
+    constraint c_default_idle {
+        waddr_en == 1'b0;
+        wopt_en  == 1'b0;
     }
     // Reset de-asserted most of the time in random stimulus
     constraint c_reset_rare { reset dist { 1'b0 := 95, 1'b1 := 5 }; }
+    // Tile index must be within the DUT's 64-tile range
+    constraint c_tile_range { tile_id inside { [0:63] }; }
 
     // ------------------------------------------------------------------------
     // Function: new
@@ -82,9 +71,7 @@ class cgra_seq_item extends uvm_sequence_item;
     // ------------------------------------------------------------------------
     function string convert2string();
         return $sformatf(
-            "reset=%0b addr_lo=0x%03h addr_hi=0x%03h cgra_id=%0d cpu_val=%0b noc_val=%0b cpu_rdy_out=%0b send_cpu_val=%0b",
-            reset, address_lower, address_upper, cgra_id,
-            recv_from_cpu_pkt__val, recv_from_inter_cgra_noc__val,
-            recv_from_cpu_pkt__rdy, send_to_cpu_pkt__val);
+            "reset=%0b tile=%0d waddr_en=%0b waddr=%0h wopt_en=%0b waddr_rdy=%0b wopt_rdy=%0b",
+            reset, tile_id, waddr_en, waddr_msg, wopt_en, waddr_rdy, wopt_rdy);
     endfunction
 endclass : cgra_seq_item

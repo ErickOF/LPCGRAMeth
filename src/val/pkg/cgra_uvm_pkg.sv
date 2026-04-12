@@ -13,42 +13,6 @@ package cgra_uvm_pkg;
     `include "uvm_macros.svh"
     `include "cgra_opcodes.svh"
 
-    typedef enum logic [6:0] {
-        CGRA_OP_OPT_NAH       = `OPT_NAH,
-        CGRA_OP_OPT_ADD       = `OPT_ADD,
-        CGRA_OP_OPT_MUL       = `OPT_MUL,
-        CGRA_OP_OPT_LD        = `OPT_LD,
-        CGRA_OP_OPT_DIV       = `OPT_DIV,
-        CGRA_OP_OPT_REM       = `OPT_REM,
-        CGRA_OP_OPT_ADD_CONST = `OPT_ADD_CONST,
-        CGRA_OP_OPT_PHI_CONST = `OPT_PHI_CONST,
-        CGRA_OP_OPT_EQ_CONST  = `OPT_EQ_CONST,
-        CGRA_OP_OPT_EXT       = `OPT_EXT,
-        CGRA_OP_OPT_BRH       = `OPT_BRH
-    } cgra_opcode_e;
-
-    typedef enum logic [4:0] {
-        CMD_LAUNCH                       = 5'd0,
-        CMD_CONFIG                       = 5'd3,
-        CMD_CONFIG_PROLOGUE_FU           = 5'd4,
-        CMD_CONFIG_PROLOGUE_FU_CROSSBAR  = 5'd5,
-        CMD_CONFIG_PROLOGUE_ROUTING_XBAR = 5'd6,
-        CMD_CONFIG_TOTAL_CTRL_COUNT      = 5'd7,
-        CMD_CONFIG_COUNT_PER_ITER        = 5'd8,
-        CMD_STORE_REQUEST                = 5'd12,
-        CMD_CONST                        = 5'd13
-    } cgra_cmd_e;
-
-    // ------------------------------------------------------------------------
-    // TB-only types (structs / unions must live in a package)
-    // ------------------------------------------------------------------------
-    typedef struct packed {
-        logic [8:0]  dst_tile;   // destination tile ID  (0 - 255)
-        logic [8:0]  addr;       // data SRAM word address
-        logic [31:0] data;       // 32-bit payload
-        logic [0:0]  predicate;  // predicate bit
-    } cgra_data_entry_t;
-
     // ------------------------------------------------------------------------
     // Sequence item
     // ------------------------------------------------------------------------

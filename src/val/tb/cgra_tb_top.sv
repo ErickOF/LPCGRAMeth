@@ -158,35 +158,24 @@ module cgra_tb_top;
     // DUT instantiation - CgraTemplateRTL
     // ------------------------------------------------------------------------
     CgraTemplateRTL dut (
-        .clk                          (clk                                 ),
-        .reset                        (dut_if.reset                        ),
-        .address_lower                (dut_if.address_lower                ),
-        .address_upper                (dut_if.address_upper                ),
-        .cgra_id                      (dut_if.cgra_id                      ),
-        .recv_from_cpu_pkt__msg       (dut_if.recv_from_cpu_pkt__msg       ),
-        .recv_from_cpu_pkt__val       (dut_if.recv_from_cpu_pkt__val       ),
-        .recv_from_cpu_pkt__rdy       (dut_if.recv_from_cpu_pkt__rdy       ),
-        .recv_from_inter_cgra_noc__msg(dut_if.recv_from_inter_cgra_noc__msg),
-        .recv_from_inter_cgra_noc__val(dut_if.recv_from_inter_cgra_noc__val),
-        .recv_from_inter_cgra_noc__rdy(dut_if.recv_from_inter_cgra_noc__rdy),
-        .send_to_cpu_pkt__msg         (dut_if.send_to_cpu_pkt__msg         ),
-        .send_to_cpu_pkt__rdy         (dut_if.send_to_cpu_pkt__rdy         ),
-        .send_to_cpu_pkt__val         (dut_if.send_to_cpu_pkt__val         ),
-        .send_to_inter_cgra_noc__msg  (dut_if.send_to_inter_cgra_noc__msg  ),
-        .send_to_inter_cgra_noc__rdy  (dut_if.send_to_inter_cgra_noc__rdy  ),
-        .send_to_inter_cgra_noc__val  (dut_if.send_to_inter_cgra_noc__val  )
+        .clk            (clk                     ),
+        .reset          (dut_if.reset            ),
+        .recv_waddr__en (dut_if.recv_waddr__en   ),
+        .recv_waddr__msg(dut_if.recv_waddr__msg  ),
+        .recv_waddr__rdy(dut_if.recv_waddr__rdy  ),
+        .recv_wopt__en  (dut_if.recv_wopt__en    ),
+        .recv_wopt__msg (dut_if.recv_wopt__msg   ),
+        .recv_wopt__rdy (dut_if.recv_wopt__rdy   )
     );
 
     // ------------------------------------------------------------------------
     // Assertion module bind
     // ------------------------------------------------------------------------
     bind CgraTemplateRTL cgra_assertions u_assertions (
-        .clk                   (clk                   ),
-        .reset                 (reset                 ),
-        .recv_from_cpu_pkt__rdy(recv_from_cpu_pkt__rdy),
-        .send_to_cpu_pkt__msg  (send_to_cpu_pkt__msg  ),
-        .send_to_cpu_pkt__val  (send_to_cpu_pkt__val  ),
-        .send_to_cpu_pkt__rdy  (send_to_cpu_pkt__rdy  )
+        .clk            (clk            ),
+        .reset          (reset          ),
+        .recv_waddr__rdy(recv_waddr__rdy),
+        .recv_wopt__rdy (recv_wopt__rdy )
     );
 
     // ------------------------------------------------------------------------
