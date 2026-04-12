@@ -9,7 +9,10 @@ Given a single flat file (e.g. ``cgra.v``), this script:
 1. Extracts all ``typedef struct`` and ``typedef enum`` definitions and
    writes them into ``<output_dir>/src/rtl/pkg/cgra_pkg.sv`` as a SystemVerilog package.
 2. Extracts every ``module ... endmodule`` block and writes each one to a
-   separate file under ``<output_dir>/src/rtl/modules/<ModuleName>.sv``, automatically
+    separate file under ``<output_dir>/src/rtl/modules/<ModuleName>.sv``, except
+    for the top module which is written as
+    ``<output_dir>/src/rtl/top/CgraTemplateRTL.sv``, automatically
+    defining an alias macro for the detected top module name and
    inserting an ``import cgra_pkg::*;`` statement after the module header.
 
 Usage::
@@ -33,8 +36,11 @@ def split_systemverilog(input_file: str | Path, output_dir: str | Path = "src/rt
     Reads *input_file*, extracts packed ``typedef struct``/``typedef enum``
     definitions into ``<output_dir>/pkg/cgra_pkg.sv``, then extracts each
     ``module ... endmodule`` block into its own file under
-    ``<output_dir>/modules/``.  An ``import cgra_pkg::*;`` line is inserted
-    immediately after the opening module declaration in every generated file.
+    ``<output_dir>/modules/``. The detected top module is written as
+    ``<output_dir>/top/CgraTemplateRTL.sv`` and contains a macro alias
+    (``CgraTemplateRTL``) that expands to the detected top module name.
+    An ``import cgra_pkg::*;`` line is inserted immediately after the
+    opening module declaration only for modules that use package typedefs.
 
     Args:
         input_file (str | Path): Path to the input ``.v`` or ``.sv`` file to parse.
@@ -45,8 +51,10 @@ def split_systemverilog(input_file: str | Path, output_dir: str | Path = "src/rt
         None
 
     Side Effects:
-        Creates or overwrites ``<output_dir>/src/rtl/pkg/cgra_pkg.sv`` and one
-        ``<output_dir>/src/rtl/modules/<ModuleName>.sv`` file per module found.
+        Creates or overwrites ``<output_dir>/src/rtl/pkg/cgra_pkg.sv``, one
+        ``<output_dir>/src/rtl/modules/<ModuleName>.sv`` file per non-top
+        module, and one ``<output_dir>/src/rtl/top/CgraTemplateRTL.sv`` for
+        the detected top module.
         Prints a confirmation message for each file written.
     """
     src = Path(input_file).read_text(encoding="utf-8")
@@ -64,6 +72,13 @@ def split_systemverilog(input_file: str | Path, output_dir: str | Path = "src/rt
     pkg_body = "\n\n".join(type_definitions)
     pkg_content = f"package cgra_pkg;\n\n{pkg_body}\n\nendpackage\n"
 
+    # Extract typedef names so imports are only added where needed.
+    pkg_typedef_names: set[str] = set()
+    for typedef in type_definitions:
+        name_match = re.search(r"\}\s*(\w+)\s*;\s*$", typedef)
+        if name_match:
+            pkg_typedef_names.add(name_match.group(1))
+
     pkg_path = out / "src" / "rtl" / "pkg" / "cgra_pkg.sv"
     pkg_path.parent.mkdir(parents=True, exist_ok=True)
     pkg_path.write_text(pkg_content, encoding="utf-8")
@@ -74,21 +89,63 @@ def split_systemverilog(input_file: str | Path, output_dir: str | Path = "src/rt
     # The module name is captured in group 2
     module_pattern = re.compile(r"(module\s+(\w+).*?endmodule)", re.DOTALL)
 
-    for mod_content, mod_name in module_pattern.findall(src):
+    module_matches: list[tuple[str, str]] = module_pattern.findall(src)
+    module_names: list[str] = [mod_name for _, mod_name in module_matches]
+
+    # Determine the top module as one that is not instantiated by any module.
+    instantiated_modules: set[str] = set()
+    for mod_content, _ in module_matches:
+        for candidate_name in module_names:
+            inst_pattern = rf"\b{re.escape(candidate_name)}\b\s*(?:#\s*\(.*?\)\s*)?\w+\s*\("
+            if re.search(inst_pattern, mod_content, re.DOTALL):
+                instantiated_modules.add(candidate_name)
+
+    top_candidates = [name for name in module_names if name not in instantiated_modules]
+
+    top_module: str | None = None
+    if top_candidates:
+        # If there are multiple roots, pick the largest by source length.
+        top_module = max(
+            top_candidates,
+            key=lambda candidate: next(len(content) for content, name in module_matches if name == candidate),
+        )
+
+    top_alias_name = "CgraTemplateRTL"
+
+    for mod_content, mod_name in module_matches:
         new_lines: list[str] = []
         import_added = False
+        needs_pkg_import = any(
+            re.search(rf"\b{re.escape(type_name)}\b", mod_content)
+            for type_name in pkg_typedef_names
+        )
 
         for line in mod_content.splitlines():
             new_lines.append(line)
             # Insert the import statement after the module declaration line
             # Match the first occurrence of the module name (followed by parameters or ports)
-            if not import_added and f"module {mod_name}" in line:
+            if needs_pkg_import and not import_added and f"module {mod_name}" in line:
                 new_lines.append("import cgra_pkg::*;")
                 import_added = True
 
-        mod_path = out / "src" / "rtl" / "modules" / f"{mod_name}.sv"
+        is_top = mod_name == top_module
+        module_subdir = "top" if is_top else "modules"
+        mod_filename = f"{top_alias_name}.sv" if is_top else f"{mod_name}.sv"
+        mod_path = out / "src" / "rtl" / module_subdir / mod_filename
         mod_path.parent.mkdir(parents=True, exist_ok=True)
-        mod_path.write_text("\n".join(new_lines), encoding="utf-8")
+
+        if is_top:
+            alias_lines = [
+                f"`ifndef {top_alias_name}",
+                f"`define {top_alias_name} {mod_name}",
+                "`endif",
+                "",
+            ]
+            mod_content_out = "\n".join(alias_lines + new_lines)
+        else:
+            mod_content_out = "\n".join(new_lines)
+
+        mod_path.write_text(mod_content_out, encoding="utf-8")
         print(f"Created: {mod_path}")
 
 
