@@ -131,10 +131,9 @@ SIM_FLAGS := \
 # -----------------------------------------------------------------------------
 # Targets
 # -----------------------------------------------------------------------------
-.PHONY: all \
-	validate_inputs gen_from_spec gen_cgra_if gen_filelists compile_rtl \
-		browse_rtl compile compile_val sim waves waves_dve waves_verdi \
-        inspect inspect_dve inspect_verdi clean help
+.PHONY: all validate_inputs gen_opcodes gen_from_spec gen_cgra_if \
+		gen_filelists compile_rtl browse_rtl compile compile_val sim waves \
+		waves_dve waves_verdi inspect inspect_dve inspect_verdi clean help
 
 all: sim
 
@@ -202,6 +201,14 @@ gen_cgra_if: $(TOP_RTL_FILE)
 	$(PYTHON) scripts/gen_cgra_if.py --top $(TOP_RTL_FILE) -o $(CGRA_IF_FILE)
 
 # -----------------------------------------------------------------------------
+# Opcode auto-generation
+# -----------------------------------------------------------------------------
+gen_opcodes: $(wildcard src/rtl/modules/*.sv) $(TOP_RTL_FILE) | $(GEN_DIR)
+	@echo "[INFO] Regenerating opcodes: $(OPCODE_JSON_FILE) + $(OPCODE_SVH_FILE)"
+	$(PYTHON) scripts/rtl_to_opcodes.py --rtl-dir src/rtl \
+		-o $(OPCODE_JSON_FILE) --svh $(OPCODE_SVH_FILE)
+
+# -----------------------------------------------------------------------------
 # Spec generation targets (ARCH + MAP)
 # -----------------------------------------------------------------------------
 validate_inputs:
@@ -210,18 +217,18 @@ validate_inputs:
 	@test -f $(MAP_FILE) \
 		|| (echo "[ERROR] MAP file not found: $(MAP_FILE)" && exit 1)
 
-gen_from_spec: validate_inputs | $(GEN_DIR)
+gen_from_spec: validate_inputs gen_opcodes | $(GEN_DIR)
 	$(PYTHON) scripts/arch_to_sv_defines.py $(ARCH_FILE) -o $(ARCH_DEFINES_FILE)
 	$(PYTHON) scripts/json_to_imem.py $(MAP_FILE) -o $(IMEM_FILE) \
 		--packet-dump $(GEN_DIR)/packet_stream.hex \
-		--opcodes $(OPCODE_JSON_FILE) --opcode-svh $(OPCODE_SVH_FILE) \
+		--opcodes $(OPCODE_JSON_FILE) \
 		--uvm-packet-dump $(GEN_DIR)/uvm_packet_stream.hex
 
 # -----------------------------------------------------------------------------
 # RTL-only targets
 # -----------------------------------------------------------------------------
 ## Compile + elaborate RTL; -kdb (in VCS_COMMON) produces the KDB for Verdi.
-compile_rtl: gen_filelists gen_cgra_if | $(SIM_DIR) $(LOG_DIR)
+compile_rtl: gen_filelists gen_cgra_if gen_opcodes | $(SIM_DIR) $(LOG_DIR)
 	$(VCS) $(RTL_FLAGS) -top CgraTemplateRTL
 
 ## Open RTL hierarchy in Verdi (static browser, no simulation required)
@@ -243,7 +250,7 @@ endif
 ## Compile RTL + UVM TB (alias kept for backward compatibility)
 compile: compile_val
 
-compile_val: gen_filelists gen_cgra_if | $(SIM_DIR) $(LOG_DIR)
+compile_val: gen_filelists gen_cgra_if gen_opcodes | $(SIM_DIR) $(LOG_DIR)
 	$(VCS) $(VAL_FLAGS) -top cgra_tb_top
 
 ## Compile + run UVM simulation
@@ -294,7 +301,7 @@ inspect_verdi:
 # -----------------------------------------------------------------------------
 clean:
 	rm -rf $(SIM_DIR) csrc vc_hdrs.h ucli.key *.log DVEfiles novas.* verdiLog \
-	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) \
+	       $(ARCH_DEFINES_FILE) $(IMEM_FILE) $(OPCODE_SVH_FILE) $(OPCODE_JSON_FILE) \
 		   $(GEN_DIR)/uvm_packet_stream.hex
 
 help:

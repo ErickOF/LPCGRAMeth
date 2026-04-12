@@ -78,9 +78,6 @@ def _load_opcode_map(opcode_file: str | Path) -> dict[str, int]:
     for k, v in raw.items():
         result[str(k)] = int(v)
 
-    if "OPT_NAH" not in result:
-        raise ValueError("Opcode file must define OPT_NAH")
-
     return result
 
 
