@@ -87,7 +87,7 @@ class cgra_monitor extends uvm_monitor;
 
                     item = cgra_seq_item::type_id::create("mon_item");
                     item.reset     = vif.monitor_cb.reset;
-                    item.tile_id   = logic [5:0]'(i);
+                    item.tile_id   = 6'(i);
                     item.waddr_en  = vif.monitor_cb.recv_waddr__en[i];
                     item.waddr_msg = vif.monitor_cb.recv_waddr__msg[i];
                     item.waddr_rdy = vif.monitor_cb.recv_waddr__rdy[i];

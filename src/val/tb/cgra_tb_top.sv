@@ -19,126 +19,94 @@ module cgra_tb_top;
     // ------------------------------------------------------------------------
     // Task: dump_tile_0
     //
-    // Description: Prints non-X constant/control memory contents for tile 0.
+    // Description: Prints non-X control memory contents for tile 0.
     // ------------------------------------------------------------------------
     task automatic dump_tile_0();
-        $display("######### tile 0 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__0.const_mem.reg_file.regs[i]))
-                $display("tile0 const[%0d] %0d", i, dut.tile__0.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 0 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__0.ctrl_mem.reg_file.regs[i]))
-                $display("tile0 ctrl[%0d] %0d", i, dut.tile__0.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__0.ctrl_mem.reg_file.regs[i]))
+                $display("tile0 ctrl[%0d] %0d", i, dut.u_top.tile__0.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_tile_1
     //
-    // Description: Prints non-X constant/control memory contents for tile 1.
+    // Description: Prints non-X control memory contents for tile 1.
     // ------------------------------------------------------------------------
     task automatic dump_tile_1();
-        $display("######### tile 1 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__1.const_mem.reg_file.regs[i]))
-                $display("tile1 const[%0d] %0d", i, dut.tile__1.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 1 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__1.ctrl_mem.reg_file.regs[i]))
-                $display("tile1 ctrl[%0d] %0d", i, dut.tile__1.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__1.ctrl_mem.reg_file.regs[i]))
+                $display("tile1 ctrl[%0d] %0d", i, dut.u_top.tile__1.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_tile_4
     //
-    // Description: Prints non-X constant/control memory contents for tile 4.
+    // Description: Prints non-X control memory contents for tile 4.
     // ------------------------------------------------------------------------
     task automatic dump_tile_4();
-        $display("######### tile 4 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__4.const_mem.reg_file.regs[i]))
-                $display("tile4 const[%0d] %0d", i, dut.tile__4.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 4 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__4.ctrl_mem.reg_file.regs[i]))
-                $display("tile4 ctrl[%0d] %0d", i, dut.tile__4.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__4.ctrl_mem.reg_file.regs[i]))
+                $display("tile4 ctrl[%0d] %0d", i, dut.u_top.tile__4.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_tile_5
     //
-    // Description: Prints non-X constant/control memory contents for tile 5.
+    // Description: Prints non-X control memory contents for tile 5.
     // ------------------------------------------------------------------------
     task automatic dump_tile_5();
-        $display("######### tile 5 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__5.const_mem.reg_file.regs[i]))
-                $display("tile5 const[%0d] %0d", i, dut.tile__5.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 5 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__5.ctrl_mem.reg_file.regs[i]))
-                $display("tile5 ctrl[%0d] %0d", i, dut.tile__5.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__5.ctrl_mem.reg_file.regs[i]))
+                $display("tile5 ctrl[%0d] %0d", i, dut.u_top.tile__5.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_tile_8
     //
-    // Description: Prints non-X constant/control memory contents for tile 8.
+    // Description: Prints non-X control memory contents for tile 8.
     // ------------------------------------------------------------------------
     task automatic dump_tile_8();
-        $display("######### tile 8 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__8.const_mem.reg_file.regs[i]))
-                $display("tile8 const[%0d] %0d", i, dut.tile__8.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 8 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__8.ctrl_mem.reg_file.regs[i]))
-                $display("tile8 ctrl[%0d] %0d", i, dut.tile__8.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__8.ctrl_mem.reg_file.regs[i]))
+                $display("tile8 ctrl[%0d] %0d", i, dut.u_top.tile__8.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_tile_9
     //
-    // Description: Prints non-X constant/control memory contents for tile 9.
+    // Description: Prints non-X control memory contents for tile 9.
     // ------------------------------------------------------------------------
     task automatic dump_tile_9();
-        $display("######### tile 9 const mem #################");
-        for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__9.const_mem.reg_file.regs[i]))
-                $display("tile9 const[%0d] %0d", i, dut.tile__9.const_mem.reg_file.regs[i]);
-        end
         $display("######### tile 9 ctrl mem ##################");
         for (int i = 0; i < 8; i++) begin
-            if (!$isunknown(dut.tile__9.ctrl_mem.reg_file.regs[i]))
-                $display("tile9 ctrl[%0d] %0d", i, dut.tile__9.ctrl_mem.reg_file.regs[i]);
+            if (!$isunknown(dut.u_top.tile__9.ctrl_mem.reg_file.regs[i]))
+                $display("tile9 ctrl[%0d] %0d", i, dut.u_top.tile__9.ctrl_mem.reg_file.regs[i]);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: dump_data_memories
     //
-    // Description: Prints non-X entries from both data memory wrappers.
+    // Description: Prints non-X entries from the shared data memory.
     // ------------------------------------------------------------------------
     task automatic dump_data_memories();
-        $display("************* data mem 0 *************");
-        for (int i = 0; i < 16; i++) begin
-            if (!$isunknown(dut.data_mem.memory_wrapper__0.memory.regs[i]))
-                $display("data_mem0[%0d] %0d", i, dut.data_mem.memory_wrapper__0.memory.regs[i]);
-        end
-        $display("************* data mem 1 *************");
-        for (int i = 0; i < 16; i++) begin
-            if (!$isunknown(dut.data_mem.memory_wrapper__1.memory.regs[i]))
-                $display("data_mem1[%0d] %0d", i, dut.data_mem.memory_wrapper__1.memory.regs[i]);
+        $display("************* data mem reg_file *************");
+        for (int i = 0; i < 2; i++) begin
+            if (!$isunknown(dut.u_top.data_mem.reg_file.regs[i]))
+                $display("data_mem[%0d] payload=%0d pred=%0b",
+                    i,
+                    dut.u_top.data_mem.reg_file.regs[i].payload,
+                    dut.u_top.data_mem.reg_file.regs[i].predicate);
         end
     endtask
 
