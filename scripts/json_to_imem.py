@@ -117,7 +117,9 @@ def _encode_operation(raw_opt: str, opcode_map: dict[str, int]) -> tuple[int, st
         if canonical in opcode_map:
             return opcode_map[canonical], None
 
-    return opcode_map["OPT_NAH"], f"Unsupported op '{raw_opt}' -> using OPT_NAH"
+    nop_name = "OPT_START" if "OPT_START" in opcode_map else "OPT_NAH"
+    nop_val  = opcode_map.get(nop_name, 0)
+    return nop_val, f"Unsupported op '{raw_opt}' -> using {nop_name} ({nop_val})"
 
 
 def _build_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, int]) -> tuple[int, list[str]]:
@@ -130,7 +132,7 @@ def _build_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, i
     predicate = int(entry.get("predicate", 0)) & 0x1
 
     tile_id = y * mesh_cols + x
-    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_NAH")), opcode_map)
+    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_START")), opcode_map)
     if warn is not None:
         warnings.append(f"tile={tile_id} cycle={cycle}: {warn}")
 
@@ -201,7 +203,7 @@ def _build_uvm_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[st
     predicate = int(entry.get("predicate", 0)) & 0x1
 
     tile_id = y * mesh_cols + x
-    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_NAH")), opcode_map)
+    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_START")), opcode_map)
     if warn is not None:
         warnings.append(f"tile={tile_id} cycle={cycle}: {warn}")
 
