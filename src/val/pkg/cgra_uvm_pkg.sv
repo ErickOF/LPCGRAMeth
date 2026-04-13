@@ -29,7 +29,6 @@ package cgra_uvm_pkg;
     `include "cgra_operation_map_seq.sv"
     `include "cgra_prologue_config_seq.sv"
     `include "cgra_hex_replay_seq.sv"
-    `include "cgra_config_seq.sv"
 
     // ------------------------------------------------------------------------
     // Agent components
