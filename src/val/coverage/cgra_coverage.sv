@@ -2,7 +2,7 @@
 // Name:         cgra_coverage.sv
 // Author:       Obregon Fonseca, Erick
 // Create Date:  2026-02-28
-// Last Modify:  2026-03-21
+// Last Modify:  2026-04-12
 // Description:  Functional coverage collector for CgraTemplateRTL.
 // ============================================================================
 
@@ -15,14 +15,17 @@ class cgra_coverage extends uvm_subscriber #(cgra_seq_item);
     // Cover-group: key stimulus and response signals
     // ------------------------------------------------------------------------
     covergroup cg_cgra_stimulus;
-        cp_reset          : coverpoint current_item.reset;
-        cp_cpu_val        : coverpoint current_item.recv_from_cpu_pkt__val;
-        cp_noc_val        : coverpoint current_item.recv_from_inter_cgra_noc__val;
-        cp_send_cpu_val   : coverpoint current_item.send_to_cpu_pkt__val;
-        cp_send_noc_val   : coverpoint current_item.send_to_inter_cgra_noc__val;
-        cp_cpu_rdy_out    : coverpoint current_item.recv_from_cpu_pkt__rdy;
-        cp_noc_rdy_out    : coverpoint current_item.recv_from_inter_cgra_noc__rdy;
-        cx_reset_x_cpu_val : cross cp_reset, cp_cpu_val;
+        cp_reset     : coverpoint current_item.reset;
+        cp_waddr_en  : coverpoint current_item.waddr_en;
+        cp_wopt_en   : coverpoint current_item.wopt_en;
+        cp_waddr_rdy : coverpoint current_item.waddr_rdy;
+        cp_wopt_rdy  : coverpoint current_item.wopt_rdy;
+        cp_tile_id   : coverpoint current_item.tile_id {
+            bins tile_low  = { [0:15]  };
+            bins tile_mid  = { [16:47] };
+            bins tile_high = { [48:63] };
+        }
+        cx_reset_x_waddr_en : cross cp_reset, cp_waddr_en;
     endgroup
 
     // ------------------------------------------------------------------------
@@ -37,13 +40,9 @@ class cgra_coverage extends uvm_subscriber #(cgra_seq_item);
     // ------------------------------------------------------------------------
     function new(string name = "cgra_coverage", uvm_component parent = null);
         super.new(name, parent);
-
         cg_cgra_stimulus = new();
     endfunction
 
-    // ------------------------------------------------------------------------
-    // Called by uvm_subscriber analysis export
-    // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
     // Function: write
     //

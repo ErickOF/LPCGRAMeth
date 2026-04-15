@@ -2,9 +2,10 @@
 // Name:         cgra_driver.sv
 // Author:       Obregon Fonseca, Erick
 // Create Date:  2026-02-28
-// Last Modify:  2026-03-21
+// Last Modify:  2026-04-12
 // Description:  UVM driver - translates sequence items into DUT pin wiggles.
-//      Drives all CgraTemplateRTL input ports each cycle.
+//      Drives CgraTemplateRTL write-address and write-option input ports
+//      for a single targeted tile per transaction.
 // ============================================================================
 
 class cgra_driver extends uvm_driver #(cgra_seq_item);
@@ -75,39 +76,40 @@ class cgra_driver extends uvm_driver #(cgra_seq_item);
     // ------------------------------------------------------------------------
     task init_signals();
         @(vif.driver_cb);
-        vif.driver_cb.reset                         <= 1'b1;
-        vif.driver_cb.address_lower                 <= '0;
-        vif.driver_cb.address_upper                 <= '0;
-        vif.driver_cb.cgra_id                       <= '0;
-        vif.driver_cb.recv_from_cpu_pkt__msg        <= '0;
-        vif.driver_cb.recv_from_cpu_pkt__val        <= 1'b0;
-        vif.driver_cb.recv_from_inter_cgra_noc__msg <= '0;
-        vif.driver_cb.recv_from_inter_cgra_noc__val <= 1'b0;
-        vif.driver_cb.send_to_cpu_pkt__rdy          <= 1'b1;
-        vif.driver_cb.send_to_inter_cgra_noc__rdy   <= 1'b1;
+        vif.driver_cb.reset <= 1'b1;
+        for (int i = 0; i < 64; i++) begin
+            vif.driver_cb.recv_waddr__en[i]  <= 1'b0;
+            vif.driver_cb.recv_waddr__msg[i] <= '0;
+            vif.driver_cb.recv_wopt__en[i]   <= 1'b0;
+            vif.driver_cb.recv_wopt__msg[i]  <= '0;
+        end
     endtask
 
     // ------------------------------------------------------------------------
     // Task: drive_item
     //
     // Description: Applies one transaction item to the DUT interface for one
-    //      clock cycle.
+    //      clock cycle.  All tiles are held idle; only item.tile_id receives
+    //      the driven en/msg signals.
     //
     // Params:
     //   - item (input cgra_seq_item): Sequence item to drive.
     // ------------------------------------------------------------------------
     task drive_item(cgra_seq_item item);
         @(vif.driver_cb);
-        vif.driver_cb.reset                         <= item.reset;
-        vif.driver_cb.address_lower                 <= item.address_lower;
-        vif.driver_cb.address_upper                 <= item.address_upper;
-        vif.driver_cb.cgra_id                       <= item.cgra_id;
-        vif.driver_cb.recv_from_cpu_pkt__msg        <= item.recv_from_cpu_pkt__msg;
-        vif.driver_cb.recv_from_cpu_pkt__val        <= item.recv_from_cpu_pkt__val;
-        vif.driver_cb.recv_from_inter_cgra_noc__msg <= item.recv_from_inter_cgra_noc__msg;
-        vif.driver_cb.recv_from_inter_cgra_noc__val <= item.recv_from_inter_cgra_noc__val;
-        vif.driver_cb.send_to_cpu_pkt__rdy          <= item.send_to_cpu_pkt__rdy;
-        vif.driver_cb.send_to_inter_cgra_noc__rdy   <= item.send_to_inter_cgra_noc__rdy;
+        vif.driver_cb.reset <= item.reset;
+        // Default all tiles to idle
+        for (int i = 0; i < 64; i++) begin
+            vif.driver_cb.recv_waddr__en[i]  <= 1'b0;
+            vif.driver_cb.recv_waddr__msg[i] <= '0;
+            vif.driver_cb.recv_wopt__en[i]   <= 1'b0;
+            vif.driver_cb.recv_wopt__msg[i]  <= '0;
+        end
+        // Drive the targeted tile
+        vif.driver_cb.recv_waddr__en[item.tile_id]  <= item.waddr_en;
+        vif.driver_cb.recv_waddr__msg[item.tile_id] <= item.waddr_msg;
+        vif.driver_cb.recv_wopt__en[item.tile_id]   <= item.wopt_en;
+        vif.driver_cb.recv_wopt__msg[item.tile_id]  <= item.wopt_msg;
         `uvm_info(get_type_name(),
             $sformatf("DRIVE  %s", item.convert2string()), UVM_HIGH)
     endtask

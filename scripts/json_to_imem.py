@@ -47,7 +47,7 @@ OP_ALIASES: dict[str, str] = {
 
 CMD_CONFIG = 3
 PACKET_WIDTH = 185
-UVM_PACKET_WIDTH = 228
+CGRA_CONFIG_WIDTH = 77  # CGRAConfig_6_4_10_12 packed struct width
 
 
 def _append_field(acc: int, value: int, width: int) -> int:
@@ -77,9 +77,6 @@ def _load_opcode_map(opcode_file: str | Path) -> dict[str, int]:
     result: dict[str, int] = {}
     for k, v in raw.items():
         result[str(k)] = int(v)
-
-    if "OPT_NAH" not in result:
-        raise ValueError("Opcode file must define OPT_NAH")
 
     return result
 
@@ -120,7 +117,9 @@ def _encode_operation(raw_opt: str, opcode_map: dict[str, int]) -> tuple[int, st
         if canonical in opcode_map:
             return opcode_map[canonical], None
 
-    return opcode_map["OPT_NAH"], f"Unsupported op '{raw_opt}' -> using OPT_NAH"
+    nop_name = "OPT_START" if "OPT_START" in opcode_map else "OPT_NAH"
+    nop_val  = opcode_map.get(nop_name, 0)
+    return nop_val, f"Unsupported op '{raw_opt}' -> using {nop_name} ({nop_val})"
 
 
 def _build_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, int]) -> tuple[int, list[str]]:
@@ -133,7 +132,7 @@ def _build_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, i
     predicate = int(entry.get("predicate", 0)) & 0x1
 
     tile_id = y * mesh_cols + x
-    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_NAH")), opcode_map)
+    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_START")), opcode_map)
     if warn is not None:
         warnings.append(f"tile={tile_id} cycle={cycle}: {warn}")
 
@@ -194,8 +193,16 @@ def _build_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, i
     return pkt, warnings
 
 
-def _build_uvm_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, int]) -> tuple[int, list[str]]:
-    """Build one 228-bit UVM packet matching IntraCgraPacket_4_4x1_256_8_2."""
+def _build_uvm_cfg_line(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[str, int]) -> tuple[str, list[str]]:
+    """Build one space-separated 'tile_id waddr wopt' line for cgra_hex_replay_seq.sv.
+
+    Format:  <tile_id:02x> <waddr:1x> <wopt:020x>
+      tile_id  —  6-bit tile index (0-63)
+      waddr    —  3-bit ctrl-mem slot address, taken from map 'cycle' field
+      wopt     —  77-bit CGRAConfig_6_4_10_12 packed struct:
+                    ctrl[5:0], predicate[0:0], fu_in[3:0][2:0],
+                    outport[11:0][3:0], predicate_in[9:0][0:0]
+    """
     warnings: list[str] = []
 
     x = int(entry["x"])
@@ -204,64 +211,31 @@ def _build_uvm_packet(entry: dict[str, Any], mesh_cols: int, opcode_map: dict[st
     predicate = int(entry.get("predicate", 0)) & 0x1
 
     tile_id = y * mesh_cols + x
-    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_NAH")), opcode_map)
+    opcode, warn = _encode_operation(str(entry.get("opt", "OPT_START")), opcode_map)
     if warn is not None:
         warnings.append(f"tile={tile_id} cycle={cycle}: {warn}")
 
+    # fu_in[3:0] — map JSON does not carry fu_in, default to 0
     fu_in = [0, 0, 0, 0]
-    routing8 = [_parse_selector(entry.get(f"out_{i}", "none")) for i in range(8)]
-    routing12 = [*routing8, 0, 0, 0, 0]
-    fu_xbar12 = [0] * 12
-    vector_factor_power = 0
-    is_last_ctrl = 0
-    write_reg_from = [0, 0, 0, 0]
-    write_reg_idx = [0, 0, 0, 0]
-    read_reg_from = [0, 0, 0, 0]
-    read_reg_idx = [0, 0, 0, 0]
+    # outport[11:0] — map provides out_0..out_7; indices 8-11 default to 0
+    outport = [_parse_selector(entry.get(f"out_{i}", "none")) for i in range(8)]
+    outport += [0, 0, 0, 0]
+    # predicate_in[9:0] — not in map JSON, default to 0
+    pred_in = [0] * 10
 
-    pkt = 0
+    # Pack into 77-bit value matching CGRAConfig_6_4_10_12 packed struct (MSB first)
+    val = 0
+    val = (val << 6) | (opcode & 0x3F)          # ctrl[5:0]
+    val = (val << 1) | (predicate & 0x1)         # predicate[0:0]
+    for i in range(3, -1, -1):                   # fu_in[3:0][2:0] — fu_in[3] at MSB
+        val = (val << 3) | (fu_in[i] & 0x7)
+    for i in range(11, -1, -1):                  # outport[11:0][3:0] — outport[11] at MSB
+        val = (val << 4) | (outport[i] & 0xF)
+    for i in range(9, -1, -1):                   # predicate_in[9:0][0:0] — idx 9 at MSB
+        val = (val << 1) | (pred_in[i] & 0x1)
 
-    # Intra header
-    pkt = _append_field(pkt, 0, 9)  # src
-    pkt = _append_field(pkt, tile_id, 9)  # dst
-    pkt = _append_field(pkt, 0, 2)  # src_cgra_id
-    pkt = _append_field(pkt, 0, 2)  # dst_cgra_id
-    pkt = _append_field(pkt, 0, 2)  # src_cgra_x
-    pkt = _append_field(pkt, 0, 1)  # src_cgra_y
-    pkt = _append_field(pkt, 0, 2)  # dst_cgra_x
-    pkt = _append_field(pkt, 0, 1)  # dst_cgra_y
-    pkt = _append_field(pkt, 0, 8)  # opaque
-    pkt = _append_field(pkt, 0, 1)  # vc_id
-
-    # Payload
-    pkt = _append_field(pkt, CMD_CONFIG, 5)  # cmd
-    pkt = _append_field(pkt, 0, 32)  # data.payload
-    pkt = _append_field(pkt, predicate, 1)  # data.predicate
-    pkt = _append_field(pkt, 0, 1)  # data.bypass
-    pkt = _append_field(pkt, 0, 1)  # data.delay
-    pkt = _append_field(pkt, 0, 9)  # data_addr
-
-    pkt = _append_field(pkt, opcode, 7)  # operation
-    for sel in fu_in:
-        pkt = _append_field(pkt, sel, 3)
-    for sel in routing12:
-        pkt = _append_field(pkt, sel, 4)
-    for sel in fu_xbar12:
-        pkt = _append_field(pkt, sel, 2)
-    pkt = _append_field(pkt, vector_factor_power, 3)
-    pkt = _append_field(pkt, is_last_ctrl, 1)
-    for v in write_reg_from:
-        pkt = _append_field(pkt, v, 2)
-    for v in write_reg_idx:
-        pkt = _append_field(pkt, v, 4)
-    for v in read_reg_from:
-        pkt = _append_field(pkt, v, 1)
-    for v in read_reg_idx:
-        pkt = _append_field(pkt, v, 4)
-
-    pkt = _append_field(pkt, cycle, 3)  # ctrl_addr
-
-    return pkt, warnings
+    line = f"{tile_id:02x} {cycle:01x} {val:020x}"
+    return line, warnings
 
 
 def _emit_chunk_load_store(words: list[str], value64: int, rd: int, store_inst: str) -> None:
@@ -362,9 +336,9 @@ def generate_imem_from_map(
         imem_words.extend(_packet_to_imem_words(packet))
 
         if uvm_packet_dump is not None:
-            uvm_packet, uvm_warn = _build_uvm_packet(entry, mesh_cols, opcode_map)
+            uvm_line, uvm_warn = _build_uvm_cfg_line(entry, mesh_cols, opcode_map)
             warnings.extend(uvm_warn)
-            uvm_packet_lines.append(f"{uvm_packet:057x}")
+            uvm_packet_lines.append(uvm_line)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(imem_words) + ("\n" if imem_words else ""), encoding="utf-8")

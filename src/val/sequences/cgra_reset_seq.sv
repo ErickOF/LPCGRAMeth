@@ -47,11 +47,9 @@ class cgra_reset_seq extends cgra_base_seq;
             start_item(item);
 
             if (!item.randomize() with {
-                reset                         == reset_assert_val;
-                recv_from_cpu_pkt__val        == 1'b0;
-                recv_from_inter_cgra_noc__val == 1'b0;
-                send_to_cpu_pkt__rdy          == 1'b1;
-                send_to_inter_cgra_noc__rdy   == 1'b1;
+                reset    == reset_assert_val;
+                waddr_en == 1'b0;
+                wopt_en  == 1'b0;
             })
                 `uvm_fatal("RAND_FAIL", "reset_item randomization failed")
 

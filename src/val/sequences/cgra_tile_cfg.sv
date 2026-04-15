@@ -2,39 +2,30 @@
 // Name:         cgra_tile_cfg.sv
 // Author:       Obregon Fonseca, Erick
 // Create Date:  2026-03-11
-// Last Modify:  2026-03-21
-// Description:  Per-tile aggregate configuration object containing const,
-//      loop, main control, and prologue control descriptors.
+// Last Modify:  2026-04-12
+// Description:  Per-tile aggregate configuration object. Holds the target
+//      tile index and an ordered array of CGRAConfig_6_4_10_12 control steps
+//      that are written sequentially via recv_waddr / recv_wopt.
 // ============================================================================
 
 class cgra_tile_cfg;
-    logic [8:0]  tile_id;           // destination tile ID (0 - 255)
-    logic [31:0] const_val;         // CMD_CONST : constant register value
-    logic [31:0] count_per_iter;    // CMD_CONFIG_COUNT_PER_ITER
-    logic [31:0] total_ctrl_count;  // CMD_CONFIG_TOTAL_CTRL_COUNT
+    logic [5:0] tile_id;  // destination tile index (0-63)
 
-    // Kernel control steps - one CMD_CONFIG per entry (ctrl_addr = index)
+    // Kernel control steps - one write per entry; ctrl_addr = array index
     cgra_ctrl_step_cfg ctrl_steps[];
 
     // Prologue entries (each set uses sequential ctrl_addr values)
-    cgra_ctrl_step_cfg prologue_fu[];       // CMD_CONFIG_PROLOGUE_FU
-    cgra_ctrl_step_cfg prologue_routing[];  // CMD_CONFIG_PROLOGUE_ROUTING_CROSSBAR
-    cgra_ctrl_step_cfg prologue_fu_xbar[];  // CMD_CONFIG_PROLOGUE_FU_CROSSBAR
+    cgra_ctrl_step_cfg prologue_fu[];       // prologue FU config
+    cgra_ctrl_step_cfg prologue_routing[];  // prologue routing crossbar config
+    cgra_ctrl_step_cfg prologue_fu_xbar[];  // prologue FU crossbar config
 
     // ------------------------------------------------------------------------
     // Function: new
     //
-    // Description: Initializes per-tile configuration container fields with
-    //      default values and empty step arrays.
-    //
-    // Params:
-    //   - none
+    // Description: Initializes per-tile configuration container with defaults.
     // ------------------------------------------------------------------------
     function new();
-        tile_id          = 9'd0;
-        const_val        = 32'd0;
-        count_per_iter   = 32'd1;
-        total_ctrl_count = 32'd1;
+        tile_id          = 6'd0;
         ctrl_steps       = new[0];
         prologue_fu      = new[0];
         prologue_routing = new[0];

@@ -46,11 +46,9 @@ class cgra_base_seq extends uvm_sequence #(cgra_seq_item);
             start_item(item);
 
             if (!item.randomize() with {
-                reset                         == 1'b0;
-                recv_from_cpu_pkt__val        == 1'b0;
-                recv_from_inter_cgra_noc__val == 1'b0;
-                send_to_cpu_pkt__rdy          == 1'b1;
-                send_to_inter_cgra_noc__rdy   == 1'b1;
+                reset    == 1'b0;
+                waddr_en == 1'b0;
+                wopt_en  == 1'b0;
             })
                 `uvm_fatal("RAND_FAIL", "idle_item randomization failed")
 
